@@ -493,23 +493,17 @@ class TestingController extends Controller
         $registered = StatusEnum::active->value;
         $block = StatusEnum::block->value;
         $locale = App::getLocale();
-        return DB::select("
-            SELECT
-                COUNT(n.id) AS \"donorCount\",
-                (SELECT COUNT(*) FROM donors WHERE DATE(created_at) = CURRENT_DATE) AS \"todayCount\",
-                (
-                    SELECT COUNT(*)
-                    FROM donors n2
-                    INNER JOIN donor_statuses ns ON ns.donor_id = n2.id
-                    WHERE ns.status_id = ?
-                ) AS \"activeCount\",
-                (
-                    SELECT COUNT(*)
-                    FROM donors n3
-                    INNER JOIN donor_statuses ns ON ns.donor_id = n3.id
-                    WHERE ns.status_id = ?
-                ) AS \"inActiveCount\"
-            FROM donors n
-        ", [$registered, $block]);
+        return  DB::table('projects as p')
+            ->where('p.id', '1')
+            ->where('p.organization_id', 1)
+            ->join('project_trans as pt', 'pt.project_id', '=', 'p.id')
+            ->select(
+                'p.id',
+                DB::raw("MAX(CASE WHEN pt.language_name = 'fa' THEN pt.name END) as name_farsi"),
+                DB::raw("MAX(CASE WHEN pt.language_name = 'ps' THEN pt.name END) as name_pashto"),
+                DB::raw("MAX(CASE WHEN pt.language_name = 'en' THEN pt.name END) as name_english")
+            )
+            ->groupBy('p.id')
+            ->first();
     }
 }

@@ -80,4 +80,9 @@ return [
     'org_sent_for_approval' => 'موسسه :username برای تأیید فرستاده شده است.',
     'org_doc_approved' => 'مدارک ثبت نام تایید شد.',
     'org_doc_rejected' => 'مدارک ثبت نام رد شد.',
+    'project_not_fou' => 'پروژه یافت نشد.',
+    'project_sent_for_approval' => 'پروژه :username برای تأیید فرستاده شده است.',
+    'project_doc_approved' => 'پروژه :username تایید شده است.',
+    'project_doc_rejected' => 'اسناد پروژه :username رد شده‌اند.',
+
 ];

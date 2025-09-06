@@ -45,6 +45,14 @@ trait PathHelperTrait
     {
         return "organizations/organization_{$organization_id}/register/agreement_{$agreement_id}/checlist_{$check_list_id}/" . $fileName;
     }
+    public function getOrganizationApprovalFolder($organization_id, $agreement_id)
+    {
+        return storage_path() . "/app/private/organizations/organization_{$organization_id}/register/agreement_{$agreement_id}/approval/";
+    }
+    public function getOrganizationApprovalDBPath($organization_id, $agreement_id, $fileName)
+    {
+        return "organizations/organization_{$organization_id}/register/agreement_{$agreement_id}/approval/" . $fileName;
+    }
     public function getProjectRegisterFolder($organization_id, $project_id, $check_list_id)
     {
         return storage_path() . "/app/private/organizations/organization_{$organization_id}/projects/project_{$project_id}/checlist_{$check_list_id}/";
@@ -52,6 +60,14 @@ trait PathHelperTrait
     public function getProjectRegisterDBPath($organization_id, $project_id, $check_list_id, $fileName)
     {
         return "organizations/organization_{$organization_id}/projects/project_{$project_id}/checlist_{$check_list_id}/" . $fileName;
+    }
+    public function getProjectApprovalFolder($organization_id, $project_id)
+    {
+        return storage_path() . "/app/private/organizations/organization_{$organization_id}/projects/project_{$project_id}/approval/";
+    }
+    public function getProjectApprovalDBPath($organization_id, $project_id, $fileName)
+    {
+        return "organization_{$organization_id}/projects/project_{$project_id}/approval/" . $fileName;
     }
     public function getScheduleRegisterFolder($schedule_id)
     {

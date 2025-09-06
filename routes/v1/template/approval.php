@@ -23,4 +23,8 @@ Route::prefix('v1')->middleware(["authorized:" . 'user:api'])->group(function ()
   Route::get('approvals/pending/donors', [ApprovalController::class, 'pendingDonorApproval'])->middleware(["userHasSubPermission:" . PermissionEnum::approval->value . "," . SubPermissionEnum::donor_approval->value . ',' . 'view']);
   Route::get('approvals/approved/donors', [ApprovalController::class, 'approvedDonorApproval'])->middleware(["userHasSubPermission:" . PermissionEnum::approval->value . "," . SubPermissionEnum::donor_approval->value . ',' . 'view']);
   Route::get('approvals/rejected/donors', [ApprovalController::class, 'rejectedDonorApproval'])->middleware(["userHasSubPermission:" . PermissionEnum::approval->value . "," . SubPermissionEnum::donor_approval->value . ',' . 'view']);
+
+  Route::get('approvals/pending/projects', [ApprovalController::class, 'pendingProjectsApproval'])->middleware(["userHasSubPermission:" . PermissionEnum::approval->value . "," . SubPermissionEnum::organization_approval->value . ',' . 'view']);
+  Route::get('approvals/approved/projects', [ApprovalController::class, 'approvedProjectsApproval'])->middleware(["userHasSubPermission:" . PermissionEnum::approval->value . "," . SubPermissionEnum::organization_approval->value . ',' . 'view']);
+  Route::get('approvals/rejected/projects', [ApprovalController::class, 'rejectedProjectsApproval'])->middleware(["userHasSubPermission:" . PermissionEnum::approval->value . "," . SubPermissionEnum::organization_approval->value . ',' . 'view']);
 });

@@ -82,4 +82,9 @@ return [
     'org_sent_for_approval' => 'Organization :username is sent for approval.',
     'org_doc_approved' => 'Registration documents have been approved.',
     'org_doc_rejected' => 'Registration documents have been rejected.',
+    'project_not_belongs_tu' => 'Project not belongs to you.',
+    'project_not_fou' => 'Project not found.',
+    'project_sent_for_approval' => 'Project :username is sent for approval.',
+    'project_doc_approved' => 'Project :username is documents have been approved.',
+    'project_doc_rejected' => 'Project :username is documents have been rejected.',
 ];

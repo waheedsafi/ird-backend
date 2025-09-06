@@ -32,10 +32,12 @@ enum SubPermissionEnum: int
     case user_approval = 51;
     case organization_approval = 52;
     case donor_approval = 53;
+    case project_approval = 54;
     public const APPROVALS = [
         51 => ['label' => "user", 'is_category' => false],
         52 => ['label' => "organization", 'is_category' => false],
         53 => ['label' => "donor", 'is_category' => false],
+        54 => ['label' => "project", 'is_category' => false],
     ];
 
         // Activity

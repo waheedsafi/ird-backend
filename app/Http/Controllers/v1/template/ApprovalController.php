@@ -5,6 +5,7 @@ namespace App\Http\Controllers\v1\template;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Donor;
+use App\Models\Project;
 use App\Models\Approval;
 use App\Models\Document;
 use App\Models\Agreement;
@@ -13,6 +14,7 @@ use App\Models\Application;
 use App\Traits\FilterTrait;
 use App\Models\Organization;
 use Illuminate\Http\Request;
+use App\Models\ProjectStatus;
 use App\Models\AgreementStatus;
 use App\Traits\UtilHelperTrait;
 use App\Models\ApprovalDocument;
@@ -58,6 +60,8 @@ class ApprovalController extends Controller
         if ($approval->requester_type == User::class) {
             $tr = $this->approvalRepository->userApproval($approval_id);
         } else if ($approval->requester_type == Organization::class) {
+            $tr = $this->approvalRepository->organizationApproval($approval_id);
+        } else if ($approval->requester_type == Project::class) {
             $tr = $this->approvalRepository->organizationApproval($approval_id);
         }
         return response()->json($tr, 200, [], JSON_UNESCAPED_UNICODE);
@@ -262,6 +266,70 @@ class ApprovalController extends Controller
                 'organizations',
                 $approval->requester_id
             );
+        } else if ($approval->requester_type === Project::class) {
+            if ($approval->notifier_type_id == NotifierEnum::confirm_signed_project_form->value) {
+                // 1. Find organization
+                $project =
+                    DB::table('projects as p')
+                    ->where('p.id', $approval->requester_id)
+                    ->join('project_trans as pt', 'pt.project_id', '=', 'p.id')
+                    ->select(
+                        'p.id',
+                        DB::raw("MAX(CASE WHEN pt.language_name = 'fa' THEN pt.name END) as name_farsi"),
+                        DB::raw("MAX(CASE WHEN pt.language_name = 'ps' THEN pt.name END) as name_pashto"),
+                        DB::raw("MAX(CASE WHEN pt.language_name = 'en' THEN pt.name END) as name_english")
+                    )
+                    ->groupBy('p.id')
+                    ->first();
+                if (!$project) {
+                    return response()->json([
+                        'message' => __('app_translation.project_not_fou'),
+                    ], 404, [], JSON_UNESCAPED_UNICODE);
+                }
+                ProjectStatus::where('project_id', $approval->requester_id)->update(['is_active' => false]);
+
+                if ($request->approved) {
+                    $approval->approval_type_id = ApprovalTypeEnum::approved->value;
+
+                    ProjectStatus::create([
+                        'project_id' => $approval->requester_id,
+                        'comment' => $request->request_comment,
+                        'userable_id' => $authUser->id,
+                        'userable_type' => $this->getModelName(get_class($authUser)),
+                        "is_active" => true,
+                        'status_id' => StatusEnum::pending_for_schedule->value,
+                    ]);
+                    $message = [
+                        'en' => Lang::get('app_translation.project_doc_approved', ['username' => $project->name_english ?? 'Unknown User'], 'en'),
+                        'fa' => Lang::get('app_translation.project_doc_approved', ['username' => $project->name_farsi ?? 'Unknown User'], 'fa'),
+                        'ps' => Lang::get('app_translation.project_doc_approved', ['username' => $project->name_pashto ?? 'Unknown User'], 'ps'),
+                    ];
+                } else {
+                    $approval->approval_type_id = ApprovalTypeEnum::rejected->value;
+                    ProjectStatus::create([
+                        'project_id' => $approval->requester_id,
+                        'comment' => $request->request_comment,
+                        'userable_id' => $authUser->id,
+                        'userable_type' => $this->getModelName(get_class($authUser)),
+                        "is_active" => true,
+                        'status_id' => StatusEnum::document_upload_required->value,
+                    ]);
+                    $message = [
+                        'en' => Lang::get('app_translation.project_doc_rejected', ['username' => $project->name_english ?? 'Unknown User'], 'en'),
+                        'fa' => Lang::get('app_translation.project_doc_rejected', ['username' => $project->name_farsi ?? 'Unknown User'], 'fa'),
+                        'ps' => Lang::get('app_translation.project_doc_rejected', ['username' => $project->name_pashto ?? 'Unknown User'], 'ps'),
+                    ];
+                }
+
+                $this->notificationRepository->sendStoreUniqueNotification(
+                    NotifierEnum::confirm_signed_project_form->value,
+                    $message,
+                    null,
+                    null,
+                    'projects',
+                    $approval->requester_id
+                );
+            }
         }
         $approval->respond_comment = $request->respond_comment;
         $approval->respond_date = Carbon::now();
@@ -476,6 +544,60 @@ class ApprovalController extends Controller
         $query = $this->approvalRepository->getByNotifierTypeAndRequesterType(
             ApprovalTypeEnum::rejected->value,
             Organization::class
+        );
+        $this->applySearch($query, $request, [
+            'id' => 'a.id',
+            'requester' => 'org.name',
+            'requester_id' => 'a.requester_id',
+        ]);
+        $approvals = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json($approvals, 200, [], JSON_UNESCAPED_UNICODE);
+    }
+    // Project
+    public function pendingProjectsApproval(Request $request)
+    {
+        $perPage = $request->input('per_page', 10); // Number of records per page
+        $page = $request->input('page', 1); // Current page
+        $query = $this->approvalRepository->getByNotifierTypeAndRequesterType(
+            ApprovalTypeEnum::pending->value,
+            Project::class
+        );
+        $this->applySearch($query, $request, [
+            'id' => 'a.id',
+            'requester' => 'org.name',
+            'requester_id' => 'a.requester_id',
+        ]);
+        $approvals = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json($approvals, 200, [], JSON_UNESCAPED_UNICODE);
+    }
+    public function approvedProjectsApproval(Request $request)
+    {
+        $perPage = $request->input('per_page', 10); // Number of records per page
+        $page = $request->input('page', 1); // Current page
+        $query = $this->approvalRepository->getByNotifierTypeAndRequesterType(
+            ApprovalTypeEnum::approved->value,
+            Project::class
+        );
+        $this->applySearch($query, $request, [
+            'id' => 'a.id',
+            'requester' => 'org.name',
+            'requester_id' => 'a.requester_id',
+
+        ]);
+        $approvals = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json($approvals, 200, [], JSON_UNESCAPED_UNICODE);
+    }
+    public function rejectedProjectsApproval(Request $request)
+    {
+        $perPage = $request->input('per_page', 10); // Number of records per page
+        $page = $request->input('page', 1); // Current page
+
+        $query = $this->approvalRepository->getByNotifierTypeAndRequesterType(
+            ApprovalTypeEnum::rejected->value,
+            Project::class
         );
         $this->applySearch($query, $request, [
             'id' => 'a.id',

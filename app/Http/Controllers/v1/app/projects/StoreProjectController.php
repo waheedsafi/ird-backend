@@ -9,24 +9,29 @@ use App\Models\Project;
 use App\Models\Document;
 use App\Models\ManagerTran;
 use App\Models\ProjectTran;
+use App\Models\Organization;
 use App\Models\ProjectDetail;
 use App\Models\ProjectStatus;
 use App\Models\ProjectManager;
 use App\Models\ProjectDocument;
 use App\Traits\UtilHelperTrait;
 use App\Enums\Types\CountryEnum;
+use App\Enums\Types\NotifierEnum;
 use App\Enums\Types\TaskTypeEnum;
 use App\Models\ProjectDetailTran;
 use App\Enums\Statuses\StatusEnum;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Lang;
 use App\Enums\Languages\LanguageEnum;
 use App\Models\ProjectDistrictDetail;
 use App\Enums\Checklist\ChecklistEnum;
 use App\Enums\Types\CheckListTypeEnum;
+use App\Enums\Permissions\PermissionEnum;
 use App\Models\ProjectDistrictDetailTran;
 use App\Http\Requests\v1\project\ProjectStoreRequest;
+use App\Http\Requests\v1\project\StoreSignedMouRequest;
 use App\Repositories\Storage\StorageRepositoryInterface;
 use App\Repositories\Approval\ApprovalRepositoryInterface;
 use App\Repositories\Director\DirectorRepositoryInterface;
@@ -297,18 +302,124 @@ class StoreProjectController extends Controller
             TaskTypeEnum::project_registeration,
             $user_id
         );
-        $project_name = $request->project_name_english;
-        $locale = App::getLocale();
-        if ($locale === 'fa') {
-            $project_name = $request->project_name_farsi;
-        }
-        if ($locale === 'ps') {
-            $project_name = $request->project_name_pashto;
-        }
 
         return response()->json([
             'message' => 'Project created successfully.',
             'project_id' =>  $project->id,
         ], 200);
+    }
+    public function StoreSignedMou(StoreSignedMouRequest $request)
+    {
+        $request->validated();
+        $project_id = $request->project_id;
+        $authUser = $request->user();
+        $organization_id = $authUser->id;
+
+        $project = DB::table('projects as p')
+            ->where('p.id',  $project_id)
+            ->where('p.organization_id', $organization_id)
+            ->join('project_trans as pt', 'pt.project_id', '=', 'p.id')
+            ->select(
+                'p.id',
+                DB::raw("MAX(CASE WHEN pt.language_name = 'fa' THEN pt.name END) as name_farsi"),
+                DB::raw("MAX(CASE WHEN pt.language_name = 'ps' THEN pt.name END) as name_pashto"),
+                DB::raw("MAX(CASE WHEN pt.language_name = 'en' THEN pt.name END) as name_english")
+            )
+            ->groupBy('p.id')
+            ->first();
+
+        if (!$project) {
+            return response()->json(
+                [
+                    'message' => __('app_translation.project_not_belongs_tu'),
+                ],
+                500,
+                [],
+                JSON_UNESCAPED_UNICODE
+            );
+        }
+
+        // 3. Ensure task exists before proceeding
+        $task = $this->pendingTaskRepository->pendingTaskExist(
+            $authUser,
+            TaskTypeEnum::project_registeration,
+            $organization_id
+        );
+        if (!$task) {
+            return response()->json([
+                'message' => __('app_translation.task_not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+
+        $include = [
+            CheckListEnum::mou_en->value,
+            CheckListEnum::mou_fa->value,
+            CheckListEnum::mou_ps->value,
+        ];
+        $checlklistValidat = $this->validateCheckListInclude($task, $include, CheckListTypeEnum::project_registeration);
+
+        if ($checlklistValidat) {
+            return response()->json([
+                'errors' => $checlklistValidat,
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+
+        DB::beginTransaction();
+        $approval = $this->approvalRepository->storeApproval(
+            $project_id,
+            Project::class,
+            NotifierEnum::confirm_signed_project_form->value,
+            $request->request_comment
+        );
+
+
+        $documents = $this->pendingTaskRepository->pendingTaskDocuments($task->id);
+        $this->storageRepository->projectDocumentApprovalStore($project_id, $organization_id, $documents, function ($documentData) use (&$approval) {
+            $this->approvalRepository->storeApprovalDocument(
+                $approval->id,
+                $documentData
+            );
+        });
+
+
+        $this->pendingTaskRepository->destroyPendingTask(
+            $authUser,
+            TaskTypeEnum::project_registeration->value,
+            $organization_id
+        );
+
+        ProjectStatus::where('project_id', $project_id)->update(['is_active' => false]);
+        ProjectStatus::create([
+            'project_id' => $project_id,
+            'comment' => $request->request_comment,
+            'userable_id' => $authUser->id,
+            'userable_type' => $this->getModelName(get_class($authUser)),
+            "is_active" => true,
+            'status_id' => StatusEnum::pending->value,
+        ]);
+        DB::commit();
+
+        // Notification
+        $message = [
+            'en' => Lang::get('app_translation.project_sent_for_approval', ['username' => $project->name_english ?? 'Unknown User'], 'en'),
+            'fa' => Lang::get('app_translation.project_sent_for_approval', ['username' => $project->name_farsi ?? 'Unknown User'], 'fa'),
+            'ps' => Lang::get('app_translation.project_sent_for_approval', ['username' => $project->name_pashto ?? 'Unknown User'], 'ps'),
+        ];
+        $this->notificationRepository->sendStoreNotification(
+            NotifierEnum::confirm_signed_project_form->value,
+            $message,
+            "/dashboard/approval?order=desc&sch_col=requester_id&sch_val={$organization_id}&m_t=52&s_t=pending",
+            null,
+            PermissionEnum::projects->value,
+            'projects'
+        );
+        return response()->json(
+            [
+                'message' => __('app_translation.you_get_notify_after_appr'),
+            ],
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 }

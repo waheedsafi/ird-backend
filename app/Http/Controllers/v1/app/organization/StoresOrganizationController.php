@@ -527,7 +527,18 @@ class StoresOrganizationController extends Controller
                 'message' => __('app_translation.task_not_found'),
             ], 404, [], JSON_UNESCAPED_UNICODE);
         }
+        $include = [
+            CheckListEnum::organization_register_form_en->value,
+            CheckListEnum::organization_register_form_fa->value,
+            CheckListEnum::organization_register_form_ps->value,
+        ];
+        $checlklistValidat = $this->validateCheckListInclude($task, $include, CheckListTypeEnum::organization_registeration);
 
+        if ($checlklistValidat) {
+            return response()->json([
+                'errors' => $checlklistValidat,
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
         DB::beginTransaction();
         $approval = $this->approvalRepository->storeApproval(
             $organization_id,
@@ -536,16 +547,12 @@ class StoresOrganizationController extends Controller
             $request->request_comment
         );
         $documents = $this->pendingTaskRepository->pendingTaskDocuments($task->id);
-
-        $document = $this->storageRepository->documentStore($agreement->id, $organization_id, $documents, function ($documentData) use (&$approval) {
+        $this->storageRepository->organizationDocumentApprovalStore($agreement->id, $organization_id, $documents, function ($documentData) use (&$approval) {
             $this->approvalRepository->storeApprovalDocument(
                 $approval->id,
                 $documentData
             );
         });
-        if ($document) {
-            return $document;
-        }
 
         $this->pendingTaskRepository->destroyPendingTask(
             $authUser,

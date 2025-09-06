@@ -54,7 +54,41 @@ class StorageRepository implements StorageRepositoryInterface
             }
         }
     }
+    public function organizationDocumentApprovalStore($agreement_id, $organization_id, $checklists, ?callable $callback)
+    {
+        foreach ($checklists as $checklist) {
+            $baseName = basename($checklist['path']);
+            $oldPath = $this->getTempFullPath() . $baseName; // Absolute path of temp file
 
+            $newDirectory = $this->getOrganizationApprovalFolder($agreement_id, $organization_id);
+
+            if (!is_dir($newDirectory)) {
+                mkdir($newDirectory, 0775, true);
+            }
+            $newPath = $newDirectory . $baseName; // Keep original filename
+            $dbStorePath = $this->getOrganizationApprovalDBPath($organization_id, $agreement_id, $baseName);
+            // Move the file
+            if (file_exists($oldPath)) {
+                rename($oldPath, $newPath);
+            } else {
+                return response()->json([
+                    'errors' => [[$checklist['actual_name'] . ": " . __('app_translation.file_not_found')]],
+                ], 404);
+            }
+
+            $documentData = [
+                'actual_name' => $checklist['actual_name'],
+                'size' => $checklist['size'],
+                'path' => $dbStorePath,
+                'type' => $checklist['extension'],
+                'check_list_id' => $checklist['check_list_id'],
+                'project_id' => $agreement_id
+            ];
+            if ($callback) {
+                $callback($documentData);
+            }
+        }
+    }
     public function projectDocumentStore($project_id, $organization_id, $checklists, ?callable $callback)
     {
         foreach ($checklists as $checklist) {
@@ -90,7 +124,41 @@ class StorageRepository implements StorageRepositoryInterface
             }
         }
     }
+    public function projectDocumentApprovalStore($project_id, $organization_id, $checklists, ?callable $callback)
+    {
+        foreach ($checklists as $checklist) {
+            $baseName = basename($checklist['path']);
+            $oldPath = $this->getTempFullPath() . $baseName; // Absolute path of temp file
 
+            $newDirectory = $this->getProjectApprovalFolder($organization_id, $project_id);
+
+            if (!is_dir($newDirectory)) {
+                mkdir($newDirectory, 0775, true);
+            }
+            $newPath = $newDirectory . $baseName; // Keep original filename
+            $dbStorePath = $this->getProjectApprovalDBPath($organization_id, $project_id, $baseName);
+            // Move the file
+            if (file_exists($oldPath)) {
+                rename($oldPath, $newPath);
+            } else {
+                return response()->json([
+                    'errors' => [[$checklist['actual_name'] . ": " . __('app_translation.file_not_found')]],
+                ], 404);
+            }
+
+            $documentData = [
+                'actual_name' => $checklist['actual_name'],
+                'size' => $checklist['size'],
+                'path' => $dbStorePath,
+                'type' => $checklist['extension'],
+                'check_list_id' => $checklist['check_list_id'],
+                'project_id' => $project_id
+            ];
+            if ($callback) {
+                $callback($documentData);
+            }
+        }
+    }
     public function scheduleDocumentStore($schedule_id, $pending_task_id, ?callable $callback)
     {
         // Get checklist IDs
