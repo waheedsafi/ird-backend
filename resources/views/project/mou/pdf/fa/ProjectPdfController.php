@@ -21,7 +21,7 @@ class ProjectPdfController extends Controller
 
     public function generateMou(Request $request, $id)
     {
-        $languages = ['en', 'fa', 'ps'];
+        $languages = ['en'];
         $pdfFiles = [];
 
         $organizationId = $request->user()->id;
