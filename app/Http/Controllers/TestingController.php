@@ -6,6 +6,7 @@ use App\Models\News;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Email;
+use App\Models\Project;
 use App\Models\NewsTran;
 use App\Models\NewsDocument;
 use App\Models\NotifierType;
@@ -23,15 +24,21 @@ use App\Enums\Languages\LanguageEnum;
 use App\Enums\Types\ApprovalTypeEnum;
 use App\Enums\Permissions\PermissionEnum;
 use App\Enums\Permissions\SubPermissionEnum;
+use App\Repositories\Approval\ApprovalRepositoryInterface;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
 
 class TestingController extends Controller
 {
     protected $pendingTaskRepository;
+    protected $approvalRepository;
+
     public function __construct(
         PendingTaskRepositoryInterface $pendingTaskRepository,
+        ApprovalRepositoryInterface $approvalRepository,
+
     ) {
         $this->pendingTaskRepository = $pendingTaskRepository;
+        $this->approvalRepository = $approvalRepository;
     }
     private $books = [
         [
@@ -493,17 +500,15 @@ class TestingController extends Controller
         $registered = StatusEnum::active->value;
         $block = StatusEnum::block->value;
         $locale = App::getLocale();
-        return  DB::table('projects as p')
-            ->where('p.id', '1')
-            ->where('p.organization_id', 1)
-            ->join('project_trans as pt', 'pt.project_id', '=', 'p.id')
-            ->select(
-                'p.id',
-                DB::raw("MAX(CASE WHEN pt.language_name = 'fa' THEN pt.name END) as name_farsi"),
-                DB::raw("MAX(CASE WHEN pt.language_name = 'ps' THEN pt.name END) as name_pashto"),
-                DB::raw("MAX(CASE WHEN pt.language_name = 'en' THEN pt.name END) as name_english")
-            )
-            ->groupBy('p.id')
-            ->first();
+        $page = $request->input('page', 1); // Current page
+
+        $query = $this->approvalRepository->getByNotifierTypeAndRequesterType(
+            ApprovalTypeEnum::rejected->value,
+            Project::class
+        );
+
+        $approvals = $query->paginate(10, ['*'], 'page', $page);
+
+        return response()->json($approvals, 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

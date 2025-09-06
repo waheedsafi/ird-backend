@@ -46,6 +46,14 @@ class ApprovalRepository implements ApprovalRepositoryInterface
                 $requesterField = 'dnr.name as requester';
                 break;
 
+            case 'App\Models\Project':
+                $query->join('project_trans as pt', function ($join) use ($locale) {
+                    $join->on('pt.project_id', '=', 'a.requester_id')
+                        ->where('pt.language_name', $locale);
+                });
+                $requesterField = 'pt.name as requester';
+                break;
+
             case 'App\Models\User':
             default:
                 $query->join('users as usr', 'usr.id', '=', 'a.requester_id');
@@ -197,6 +205,72 @@ class ApprovalRepository implements ApprovalRepositoryInterface
                 'a.request_date',
                 'ag.start_date',
                 'ag.end_date',
+                "a.request_comment",
+                'a.responder_id',
+                'u.username as responder',
+                'a.respond_date',
+                "a.respond_comment",
+                'a.notifier_type_id',
+                'ntt.value as notifier_type',
+                'ad.id as approval_id',
+                'ad.path',
+                'ad.actual_name as name',
+                'ad.type as extension',
+                'ad.size',
+                'ct.value as checklist_name'
+            )
+            ->get();
+
+        $approvalsWithDocuments = $approval->groupBy('id')->map(function ($approvalGroup) {
+            $approval = $approvalGroup->first();
+            $documents = $approvalGroup->map(function ($item) {
+                return [
+                    'id' => $item->approval_id,
+                    'path' => $item->path,
+                    'name' => $item->name,
+                    'extension' => $item->extension,
+                    'size' => $item->size,
+                    'checklist_name' => $item->checklist_name,
+                ];
+            });
+
+            $approval->approval_documents = $documents;
+            unset($approval->approval_id, $approval->checklist_name, $approval->path, $approval->name, $approval->extension, $approval->size);  // Clean up extra fields
+
+            return $approval;
+        })->values();
+
+        if (count($approvalsWithDocuments) != 0)
+            return $approvalsWithDocuments->first();
+        return null;
+    }
+    public function projectApproval($approval_id)
+    {
+        $locale = App::getLocale();
+        $approval = DB::table('approvals as a')
+            ->where("a.id", $approval_id)
+            ->leftJoin('users as u', function ($join) {
+                $join->on('u.id', '=', 'a.responder_id');
+            })
+            ->join('project_trans as pt', function ($join) use ($locale) {
+                $join->on('pt.project_id', '=', 'a.requester_id')
+                    ->where('pt.language_name', $locale);
+            })
+            ->join('notifier_type_trans as ntt', function ($join) use ($locale) {
+                $join->on('ntt.notifier_type_id', '=', 'a.notifier_type_id')
+                    ->where('ntt.language_name', $locale);
+            })
+            ->join('approval_documents as ad', 'ad.approval_id', '=', 'a.id')
+            ->join('check_list_trans as ct', function ($join) use ($locale) {
+                $join->on('ct.check_list_id', '=', 'ad.check_list_id')
+                    ->where('ct.language_name', $locale);
+            })
+            ->select(
+                'a.id',
+                'a.completed',
+                'a.requester_id',
+                'pt.name as requester_name',
+                'a.request_date',
                 "a.request_comment",
                 'a.responder_id',
                 'u.username as responder',

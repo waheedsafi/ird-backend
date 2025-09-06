@@ -62,7 +62,7 @@ class ApprovalController extends Controller
         } else if ($approval->requester_type == Organization::class) {
             $tr = $this->approvalRepository->organizationApproval($approval_id);
         } else if ($approval->requester_type == Project::class) {
-            $tr = $this->approvalRepository->organizationApproval($approval_id);
+            $tr = $this->approvalRepository->projectApproval($approval_id);
         }
         return response()->json($tr, 200, [], JSON_UNESCAPED_UNICODE);
     }
@@ -293,7 +293,7 @@ class ApprovalController extends Controller
 
                     ProjectStatus::create([
                         'project_id' => $approval->requester_id,
-                        'comment' => $request->request_comment,
+                        'comment' => $request->request_comment ?? ' ',
                         'userable_id' => $authUser->id,
                         'userable_type' => $this->getModelName(get_class($authUser)),
                         "is_active" => true,
@@ -308,7 +308,7 @@ class ApprovalController extends Controller
                     $approval->approval_type_id = ApprovalTypeEnum::rejected->value;
                     ProjectStatus::create([
                         'project_id' => $approval->requester_id,
-                        'comment' => $request->request_comment,
+                        'comment' => $request->request_comment ?? ' ',
                         'userable_id' => $authUser->id,
                         'userable_type' => $this->getModelName(get_class($authUser)),
                         "is_active" => true,
@@ -565,7 +565,7 @@ class ApprovalController extends Controller
         );
         $this->applySearch($query, $request, [
             'id' => 'a.id',
-            'requester' => 'org.name',
+            'requester' => 'pt.name',
             'requester_id' => 'a.requester_id',
         ]);
         $approvals = $query->paginate($perPage, ['*'], 'page', $page);
@@ -582,7 +582,7 @@ class ApprovalController extends Controller
         );
         $this->applySearch($query, $request, [
             'id' => 'a.id',
-            'requester' => 'org.name',
+            'requester' => 'pt.name',
             'requester_id' => 'a.requester_id',
 
         ]);
@@ -601,7 +601,7 @@ class ApprovalController extends Controller
         );
         $this->applySearch($query, $request, [
             'id' => 'a.id',
-            'requester' => 'org.name',
+            'requester' => 'pt.name',
             'requester_id' => 'a.requester_id',
         ]);
         $approvals = $query->paginate($perPage, ['*'], 'page', $page);

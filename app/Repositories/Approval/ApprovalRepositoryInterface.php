@@ -54,8 +54,16 @@ interface ApprovalRepositoryInterface
      * Returns a organization approval.
      * 
      *
-     * @param string organization_id
+     * @param string approval_id
      * @return mixed
      */
-    public function organizationApproval($organization_id);
+    public function organizationApproval($approval_id);
+    /**
+     * Returns a project approval.
+     * 
+     *
+     * @param string approval_id
+     * @return mixed
+     */
+    public function projectApproval($approval_id);
 }
