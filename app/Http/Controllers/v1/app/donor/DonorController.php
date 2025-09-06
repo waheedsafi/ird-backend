@@ -12,6 +12,7 @@ use App\Models\AddressTran;
 use App\Models\DonorStatus;
 use App\Traits\FilterTrait;
 use Illuminate\Http\Request;
+use App\Traits\CacheKeyTrait;
 use App\Enums\Statuses\StatusEnum;
 use Illuminate\Support\Facades\DB;
 use App\Enums\Permissions\RoleEnum;
@@ -19,13 +20,13 @@ use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use App\Enums\Languages\LanguageEnum;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Requests\v1\donor\DonorUpdateRequest;
 use App\Http\Requests\v1\donor\DonorRegisterRequest;
-use Illuminate\Support\Facades\Cache;
 
 class DonorController extends Controller
 {
-    use FilterTrait;
+    use FilterTrait, CacheKeyTrait;
     private $statisticCacheName = "donor_statistic";
 
     public function index(Request $request)
@@ -183,10 +184,9 @@ class DonorController extends Controller
             $name = $validatedData['name_pashto'];
         }
 
-        // Create permissions
-
-
         DB::commit();
+        Cache::forget($this->getKey($this->statisticCacheName));
+
         return response()->json(
             [
                 'message' => __('app_translation.success'),
@@ -212,8 +212,6 @@ class DonorController extends Controller
     {
         $locale = App::getLocale();
         // 1. Get donor information
-
-
 
         $donor = DB::table('donors as don')->where('don.id', $id)
             ->join('donor_trans as dont', 'dont.donor_id', '=', 'don.id')
@@ -373,6 +371,8 @@ class DonorController extends Controller
         $address->save();
 
         DB::commit();
+        Cache::forget($this->getKey($this->statisticCacheName));
+
         return response()->json([
             'message' => __('app_translation.success'),
         ], 200, [], JSON_UNESCAPED_UNICODE);
@@ -402,12 +402,10 @@ class DonorController extends Controller
 
     public function statistics()
     {
-
         $registered = StatusEnum::active->value;
         $block = StatusEnum::block->value;
-        $locale = App::getLocale();
 
-        $statistics = Cache::remember($this->statisticCacheName . "_{$locale}", 180, function () use ($registered, $block) {
+        $statistics = Cache::remember($this->getKey($this->statisticCacheName), 180, function () use ($registered, $block) {
             return DB::select("
             SELECT
                 COUNT(n.id) AS \"donorCount\",

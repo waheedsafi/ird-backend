@@ -13,6 +13,7 @@ use App\Models\Organization;
 use Illuminate\Http\Request;
 use App\Enums\Types\NotifierEnum;
 use App\Models\NotifierTypeTrans;
+use App\Enums\Statuses\StatusEnum;
 use Illuminate\Support\Facades\DB;
 use App\Enums\Permissions\RoleEnum;
 use Illuminate\Support\Facades\App;
@@ -489,48 +490,26 @@ class TestingController extends Controller
     }
     public function testing(Request $request)
     {
-        $userId = 1; // use an existing user ID or create one
-        $priorities = [1, 2, 3]; // existing priority IDs
-        $types = [1, 2]; // existing type IDs
-
-        for ($i = 1; $i <= 20; $i++) {
-            $news = News::create([
-                'user_id' => $userId,
-                'visible' => true,
-                'date' => now()->subDays(rand(0, 30)),
-                'visibility_date' => now()->addDays(rand(1, 10)),
-                'priority_id' => $priorities[array_rand($priorities)],
-                'news_type_id' => $types[array_rand($types)],
-            ]);
-
-            NewsTran::insert([
-                [
-                    'news_id' => $news->id,
-                    'language_name' => LanguageEnum::default->value,
-                    'title' => "English Title $i",
-                    'contents' => "This is English content for news $i.",
-                ],
-                [
-                    'news_id' => $news->id,
-                    'language_name' => LanguageEnum::pashto->value,
-                    'title' => "د خبر سرلیک $i",
-                    'contents' => "د خبر محتوا $i",
-                ],
-                [
-                    'news_id' => $news->id,
-                    'language_name' => LanguageEnum::farsi->value,
-                    'title' => "عنوان خبر $i",
-                    'contents' => "محتوای خبر $i",
-                ],
-            ]);
-
-            NewsDocument::create([
-                'news_id' => $news->id,
-                'url' => "news/772f5c31-0b73-4e74-a412-831a10e6d3ad.png",
-                'extension' => "png",
-                'name' => "news_image_$i.png",
-            ]);
-        }
-        return "hw";
+        $registered = StatusEnum::active->value;
+        $block = StatusEnum::block->value;
+        $locale = App::getLocale();
+        return DB::select("
+            SELECT
+                COUNT(n.id) AS \"donorCount\",
+                (SELECT COUNT(*) FROM donors WHERE DATE(created_at) = CURRENT_DATE) AS \"todayCount\",
+                (
+                    SELECT COUNT(*)
+                    FROM donors n2
+                    INNER JOIN donor_statuses ns ON ns.donor_id = n2.id
+                    WHERE ns.status_id = ?
+                ) AS \"activeCount\",
+                (
+                    SELECT COUNT(*)
+                    FROM donors n3
+                    INNER JOIN donor_statuses ns ON ns.donor_id = n3.id
+                    WHERE ns.status_id = ?
+                ) AS \"inActiveCount\"
+            FROM donors n
+        ", [$registered, $block]);
     }
 }
