@@ -8,76 +8,95 @@ use App\Traits\PdfGeneratorTrait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
+use ZipArchive;
 
 class ProjectPdfController extends Controller
 {
     //
     use PdfGeneratorTrait, AddressTrait;
+
+
     public function generateMou(Request $request, $id)
     {
-        $mpdf = $this->generatePdf();
-        $this->setWatermark($mpdf);
+        $languages = ['en'];
+        $pdfFiles = [];
 
-        $lang = 'en';
-        $data = $this->loadProjectData($lang, $id);
+        foreach ($languages as $lang) {
+            $mpdf = $this->generatePdf();
+            $this->setWatermark($mpdf);
 
-        // return $data;
-        // Set footer
-        // $this->setFooter($mpdf, PdfFooterEnum::MOU_FIRST_FOOTER_en->value);
+            $data = $this->loadProjectData($lang, $id);
 
-        // STEP 1: Configure TOC layout
-        $mpdf->TOC([
-            'toc-preHTML' => '<h1 style="text-align:center;">Table of Contents</h1><div class="toc">',
-            'toc-postHTML' => '</div>',
-            'toc-bookmarkText' => 'Table of Contents',
-            'paging' => true,
-            'links' => true,
-        ]);
+            // STEP 1: Configure TOC
+            $mpdf->TOC([
+                'toc-preHTML' => '<h1 style="text-align:center;">Table of Contents</h1><div class="toc">',
+                'toc-postHTML' => '</div>',
+                'toc-bookmarkText' => 'Table of Contents',
+                'paging' => true,
+                'links' => true,
+            ]);
 
-        // ✅ STEP 2: Insert TOC page here
+            // STEP 2: First part
+            $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouFirstPart", $data);
 
+            // Insert TOC page
+            $mpdf->WriteHTML('<tocpagebreak />');
+            $mpdf->WriteHTML('
+            <style>
+                .toc a {
+                    cursor: pointer;
+                    color: blue;
+                    text-decoration: underline;
+                }
+            </style>
+        ');
 
-        // STEP 3: Render Blade view (with <tocentry> tags inside)
-        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouFirstPart", $data);
+            // STEP 3: Content before table
+            $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitBeforeTable", $data);
 
-        $mpdf->WriteHTML('<tocpagebreak />');
-        $mpdf->WriteHTML('
-        <style>
-            .toc a {
-                cursor: pointer;
-                color: blue;
-                text-decoration: underline;
+            // STEP 4: Landscape section
+            $mpdf->AddPage('L');
+            $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_LandscapeTableOnly", $data);
+            $mpdf->AddPage('P');
+
+            // STEP 5: Content after table
+            $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitAfterTable", $data);
+
+            // Set protection
+            $mpdf->SetProtection(['print']);
+
+            // Store the PDF temporarily
+            $fileName = "{$data['ngo_name']}_mou_{$lang}.pdf";
+            $outputPath = storage_path("app/private/temp/");
+            if (!is_dir($outputPath)) {
+                mkdir($outputPath, 0755, true);
             }
-        </style>
-    ');
+            $filePath = $outputPath . $fileName;
 
+            $mpdf->Output($filePath, 'F');
+            $pdfFiles[] = $filePath;
+        }
 
-        // Part 2: Content before the table (still portrait)
-        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitBeforeTable", $data);
+        // ✅ Create ZIP file
+        $zipFile = storage_path('app/private/mou_documents.zip');
+        $zip = new ZipArchive();
 
-        // LANDSCAPE PART (Health Facilities Table)
-        $mpdf->AddPage('L'); // 🔄 switch to landscape
-        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_LandscapeTableOnly", $data);
-        $mpdf->AddPage('P'); // 🔙 back to portrait
+        if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+            foreach ($pdfFiles as $file) {
+                $zip->addFile($file, basename($file));
+            }
+            $zip->close();
+        }
 
-        // Rest of the content
-        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitAfterTable", $data);
+        // Cleanup temporary PDFs
+        foreach ($pdfFiles as $file) {
+            unlink($file);
+        }
 
-
-        // // Part 2: Content before the table (still portrait)
-        // $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitBeforeTable", $data);
-
-        // // LANDSCAPE PART (Health Facilities Table)
-        // $mpdf->AddPage('L'); // 🔄 switch to landscape
-        // $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_LandscapeTableOnly", $data);
-        // $mpdf->AddPage('P'); // 🔙 back to portrait
-
-        // // Rest of the content
-        // $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitAfterTable", $data);
-
-        // // Done
-        return $mpdf->Output('document.pdf', 'I');
+        // Download ZIP and delete after sending
+        return response()->download($zipFile)->deleteFileAfterSend(true);
     }
+
 
     protected function loadProjectData($lang, $id)
     {
@@ -85,6 +104,10 @@ class ProjectPdfController extends Controller
 
         // 1. Main project info with joined donor/currency
         $project = DB::table('projects as p')
+            ->join('project_managers as prm', function ($join) {
+                $join->on('prm.project_id', 'p.id')
+                    ->where('prm.is_active', true);
+            })
             ->leftJoin('donor_trans as d', 'd.donor_id', '=', 'p.donor_id')
             ->leftJoin('currency_trans as c', 'c.id', '=', 'p.currency_id')
             ->leftJoin('organization_trans as nt', function ($join) use ($lang) {
@@ -97,8 +120,10 @@ class ProjectPdfController extends Controller
             })
             ->where('p.id', $id)
             ->select(
+
                 'p.*',
                 'prot.*',
+                'prm.manager_id',
                 'nt.name as organization_name',
                 'nt.vision as organization_vision',
                 'nt.mission as organization_mission',
@@ -111,10 +136,10 @@ class ProjectPdfController extends Controller
 
         // return $project;
 
-        $focal_point = DB::table('project_managers as pro')
-            ->where('pro.id', $project->project_manager_id)
-            ->join('emails as e', 'e.id', '=', 'pro.email_id')
-            ->join('contacts as c', 'c.id', '=', 'pro.contact_id')
+        $focal_point = DB::table('managers as man')
+            ->where('man.id', $project->manager_id)
+            ->join('emails as e', 'e.id', '=', 'man.email_id')
+            ->join('contacts as c', 'c.id', '=', 'man.contact_id')
             ->select(
                 'c.value as contact',
                 'e.value as email'
@@ -220,15 +245,14 @@ class ProjectPdfController extends Controller
 
         $data = [
             'preamble' => $project->preamble,
-            'organization_name' => $project->name,
-            'introduction_organization' => $project->organization_introduction,
+            'ngo_name' => $project->name,
+            'introduction_ngo' => $project->organization_introduction,
             'abbr' => $project->terminologies,
             'org_vision' => $project->organization_vision,
             'org_mission' =>  $project->organization_mission,
             'org_management_working_area' => $project->organization_senior_manangement,
             'project_structure' => $project->project_structure,
             'backgroud_experince' => $project->health_experience,
-            'provision_health_service' => $project->prev_proj_activi,
             'introduction_current_project' => $project->introduction,
             'health_facilities' => [
                 ['province' => 'kabul', 'facilities' => 'arzan_qimat'],
@@ -255,7 +279,7 @@ class ProjectPdfController extends Controller
             'health_staff' => $health_worker,
             'admin_staff' => $managment_worker,
             'action_plan' => $project->operational_plan,
-            'organization_director_contact' => $organization_director,
+            'ngo_director_contact' => $organization_director,
             'project_focal_point_contact' => $focal_point,
             'project_provinces' => $provinceList,
 
