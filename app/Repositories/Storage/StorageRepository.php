@@ -240,7 +240,6 @@ class StorageRepository implements StorageRepositoryInterface
         $oldDocument->path = $dbStorePath;
         $oldDocument->size = $fileSize;
         $oldDocument->type = $mimetype;
-        $oldDocument->checklist_id = $checklist_id;
         $oldDocument->save();
 
         // 3. Delete previous file

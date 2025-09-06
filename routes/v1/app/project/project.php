@@ -32,6 +32,8 @@ Route::prefix('v1')->middleware(["multiAuthorized:" . 'organization:api,user:api
     Route::get('/projects/statistics', [ViewProjectController::class, "projectStatistics"])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'view']);
 
     Route::get('/projects/checklists/{id}', [ViewProjectController::class, 'checklists'])->middleware(["userHasSubPermission:" . PermissionEnum::projects->value . "," . SubPermissionEnum::project_checklist->value . ',' . 'view']);
+
+    Route::post('/projects/signed/mou', [StoreProjectController::class, 'StoreSignedRegisterForm'])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'add']);
 });
 
 
