@@ -69,7 +69,7 @@ class OrganizationPdfController extends Controller
 
             // Store the PDF temporarily
 
-            $fileName = "{$data['organization_name']}_registration_{$lang}.pdf";
+            $fileName = "{$data['ngo_name']}_registration_{$lang}.pdf";
             $outputPath = storage_path("app/private/temp/");
             if (!is_dir($outputPath)) {
                 mkdir($outputPath, 0755, true);
@@ -188,10 +188,10 @@ class OrganizationPdfController extends Controller
         if (!$director) {
             return "Director not found";
         }
-        $irdDirector = DB::table('staff as s')
-            ->where('s.staff_type_id', AboutStaffEnum::director->value)
-            ->join('staff_trans as st', function ($join) use ($locale) {
-                $join->on('st.staff_id', '=', 's.id')
+        $irdDirector = DB::table('about_staff as s')
+            ->where('s.about_staff_type_id', AboutStaffEnum::director->value)
+            ->join('about_staff_trans as st', function ($join) use ($locale) {
+                $join->on('st.about_staff_id', '=', 's.id')
                     ->where("st.language_name", $locale);
             })
             ->select(
@@ -204,7 +204,7 @@ class OrganizationPdfController extends Controller
         $data = [
             'register_number' => $organization->registration_no,
             'date_of_sign' => '................',
-            'organization_name' =>  $organization->name,
+            'ngo_name' =>  $organization->name,
             'abbr' => $organization->abbr,
             'contact' => $organization->contact,
             'address' => $organization->area . ',' . $organization->district . ',' . $organization->province . ',' . $organization->country,
