@@ -275,11 +275,12 @@ class ApprovalController extends Controller
                     ->join('project_trans as pt', 'pt.project_id', '=', 'p.id')
                     ->select(
                         'p.id',
+                        'p.organization_id',
                         DB::raw("MAX(CASE WHEN pt.language_name = 'fa' THEN pt.name END) as name_farsi"),
                         DB::raw("MAX(CASE WHEN pt.language_name = 'ps' THEN pt.name END) as name_pashto"),
                         DB::raw("MAX(CASE WHEN pt.language_name = 'en' THEN pt.name END) as name_english")
                     )
-                    ->groupBy('p.id')
+                    ->groupBy('p.id', 'p.organization_id')
                     ->first();
                 if (!$project) {
                     return response()->json([
@@ -327,7 +328,7 @@ class ApprovalController extends Controller
                     null,
                     null,
                     'projects',
-                    $approval->requester_id
+                    $project->organization_id
                 );
             }
         }
