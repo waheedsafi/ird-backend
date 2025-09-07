@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="rtl">
 
     <head>
         <meta charset="UTF-8">
@@ -92,9 +92,9 @@
         </style>
     </head>
 
-    <body>
+    <body dir="rtl">
 
-        <div class="min-contents">
+        <div class="min-contents ">
 
             {{-- artical one --}}
             <p class="content-text" id="mou-section-3">
@@ -252,4 +252,7 @@
 
             {{ $introduction_current_project }}
             <br>
-            <div class="page"></div>
+        </div>
+    </body>
+
+</html>

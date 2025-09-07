@@ -252,4 +252,3 @@
 
             {{ $introduction_current_project }}
             <br>
-            <div class="page"></div>
