@@ -1,6 +1,7 @@
 <?php
 
 
+require __DIR__ . '/v1/app/schedule/schedule.php';
 require __DIR__ . '/v1/app/project/projectPdf.php';
 require __DIR__ . '/v1/app/project/projectManager.php';
 require __DIR__ . '/v1/app/project/project.php';

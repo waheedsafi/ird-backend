@@ -17,14 +17,8 @@ class SendNotificationJob implements ShouldQueue
     public $url;
     public $data;
     public $requestDetail;
-    /**
-     * Number of times the job may be attempted.
-     */
-    public $tries = 3;
-    /**
-     * The number of seconds the job can run before timing out.
-     */
-    public $timeout = 10;
+    public $tries = 5;       // More attempts
+    public $timeout = 15;    // Increased timeout in seconds
     /**
      * Create a new job instance.
      */
@@ -34,9 +28,12 @@ class SendNotificationJob implements ShouldQueue
         $this->data = $data;
         $this->requestDetail = $requestDetail;
     }
-    public function backoff(): int
+    /**
+     * Retry delay between attempts (exponential backoff).
+     */
+    public function backoff(): array
     {
-        return 5; // Retry after 5 seconds
+        return [5, 15, 30, 60]; // Custom backoff per attempt
     }
 
     /**

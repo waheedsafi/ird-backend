@@ -502,4 +502,24 @@ class CheckListController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
+    public function deputyDocChecklist()
+    {
+        $checklist = DB::table('check_lists as cl')
+            ->where('cl.id', ChecklistEnum::schedule_deputy_document->value)
+            ->where('cl.active', true)
+            ->select(
+                'cl.id',
+                'cl.acceptable_mimes',
+                'cl.acceptable_extensions',
+                'cl.description',
+                'cl.file_size',
+            )
+            ->first();
+        return response()->json(
+            $checklist,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
 }

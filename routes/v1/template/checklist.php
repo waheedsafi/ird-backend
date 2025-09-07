@@ -18,6 +18,7 @@ Route::prefix('v1')->middleware(["multiAuthorized:" . 'user:api,organization:api
 
   Route::get('checklists/project-registeration', [CheckListController::class, 'projectRegisteration'])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'view']);
   // Tested
+  Route::get('checklists/deputy-doc', [CheckListController::class, 'deputyDocChecklist']);
   Route::get('checklists/representative', [CheckListController::class, 'representativeChecklist']);
 });
 

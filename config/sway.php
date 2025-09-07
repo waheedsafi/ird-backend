@@ -2,8 +2,8 @@
 
 return [
     'token' => [
-        'access_token_expiration' => 0.5, // in minutes
-        'refresh_token_expiration' => 15, // in days
+        'access_token_expiration' => 20, // in minutes
+        'refresh_token_expiration' => 10, // in days
         'secret_key' => "GGPoDl2y3ayUszNnw/wQQ8++RR5r89poozLQOc8t4OM="
     ],
     'redis' => [
