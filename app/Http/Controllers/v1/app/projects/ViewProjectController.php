@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\v1\app\projects;
 
+use App\Models\Project;
 use App\Traits\FilterTrait;
 use Illuminate\Http\Request;
 use App\Enums\Types\TaskTypeEnum;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use App\Enums\Languages\LanguageEnum;
+use Illuminate\Support\Facades\Cache;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
 
 class ViewProjectController extends Controller
@@ -435,6 +437,48 @@ class ViewProjectController extends Controller
                 'total_direct_beneficiaries' => $result->total_direct_beneficiaries,
                 'total_in_direct_beneficiaries' => $result->total_in_direct_beneficiaries,
             ],
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
+
+    public function dashboard(Request $request)
+    {
+        $authOrganizationId = $request->user()->id;
+
+        // Cache key per organization
+        $cacheKey = "dashboard_organization_{$authOrganizationId}";
+
+        // Store in cache for 10 minutes
+        $result = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($authOrganizationId) {
+            return DB::table('projects as p')
+                ->leftJoin('project_details as pd', 'p.id', '=', 'pd.project_id')
+                ->leftJoin('project_district_details as pdd', 'pd.id', '=', 'pdd.project_detail_id')
+                ->leftJoin('project_statuses as ps', function ($join) {
+                    $join->on('ps.project_id', '=', 'p.id')
+                        ->where('ps.is_active', true)
+                        ->where('ps.status_id', StatusEnum::expired->value);
+                })
+                ->where('p.organization_id', $authOrganizationId)
+                ->select(
+                    DB::raw('COUNT(DISTINCT p.id) as total_projects'),
+                    DB::raw('COUNT(DISTINCT pd.province_id) as provinces'),
+                    DB::raw('COUNT(DISTINCT pdd.district_id) as districts'),
+                    DB::raw('COALESCE(SUM(pd.budget), 0) as total_budget'),
+                    DB::raw('COALESCE(SUM(pd.direct_beneficiaries), 0) as total_direct_beneficiaries'),
+                    DB::raw('COALESCE(SUM(pd.in_direct_beneficiaries), 0) as total_in_direct_beneficiaries'),
+                    DB::raw('COUNT(DISTINCT CASE WHEN ps.id IS NOT NULL THEN p.id END) as completed_projects')
+                )
+                ->first();
+        });
+
+        return response()->json([
+            'projects' => $result->total_projects,
+            'provinces' => $result->provinces,
+            'districts' => $result->districts,
+            'total_budget' => $result->total_budget,
+            'direct_beneficiaries' => $result->total_direct_beneficiaries,
+            'in_direct_beneficiaries' => $result->total_in_direct_beneficiaries,
+            'completed_projects' => $result->completed_projects,
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

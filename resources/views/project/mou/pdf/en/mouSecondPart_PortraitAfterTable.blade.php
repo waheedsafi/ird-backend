@@ -1,4 +1,3 @@
-   <div class="page"></div>
    <br>
    {!! '<tocentry content="Goals" level="3" />' !!}
    <h5>

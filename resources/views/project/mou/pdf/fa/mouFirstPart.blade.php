@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="rtl">
 
     <head>
         <meta charset="UTF-8">
@@ -78,7 +78,7 @@
         </style>
     </head>
 
-    <body>
+    <body dir="rtl">
 
         <div class="min-logo-div">
             <img src="{{ public_path('storage/images/emart.png') }}" class="min-logo" alt="">
