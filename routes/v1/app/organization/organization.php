@@ -16,7 +16,7 @@ Route::prefix('v1')->middleware(["multiAuthorized:" . 'user:api,organization:api
   Route::post('/organization/extend/form/complete', [ExtendOrganizationController::class, 'extendOrganizationAgreement']);
   Route::post('/organization/store/signed/register/form', [StoresOrganizationController::class, 'StoreSignedRegisterForm']);
   Route::get('/organization/header-info/{id}', [ViewsOrganizationController::class, 'headerInfo']);
-  Route::delete('/organizations/task/content/{id}', [DeletesOrganizationController::class, 'destroyPendingTask'])->middleware(["userHasMainPermission:" . PermissionEnum::organizations->value . ',' . 'delete']);
+  Route::delete('/organizations/task/content/{id}', [DeletesOrganizationController::class, 'destroyPendingTask'])->middleware(["userHasMainPermission:" . PermissionEnum::organizations->value . ',' . 'add']);
 
   // Tested
   Route::post('/organizations/change/password', [EditesOrganizationController::class, 'changePassword'])->middleware(["userHasSubPermission:" . PermissionEnum::organizations->value . "," . SubPermissionEnum::organizations_account_password->value . ',' . 'edit']);

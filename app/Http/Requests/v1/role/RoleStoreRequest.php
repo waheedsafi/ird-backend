@@ -25,7 +25,18 @@ class RoleStoreRequest extends FormRequest
             "name_farsi" => "required|string|max:50",
             "name_pashto" => "required|string|max:50",
             "name_english" => "required|string|max:50",
+
             "permissions" => "required|array",
+            "permissions.*.id" => "required|integer",
+            "permissions.*.view" => "required|boolean",
+            "permissions.*.add" => "required|boolean",
+            "permissions.*.edit" => "required|boolean",
+            "permissions.*.delete" => "required|boolean",
+            "permissions.*.sub" => "nullable|array",
+            "permissions.*.sub.*.id" => "required|integer",
+
+            "user_role_assignment" => "nullable|array",
+            "user_role_assignment.*.id" => "required|integer|exists:roles,id",
         ];
     }
 }

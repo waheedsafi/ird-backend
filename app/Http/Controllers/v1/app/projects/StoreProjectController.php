@@ -408,7 +408,7 @@ class StoreProjectController extends Controller
         $this->notificationRepository->sendStoreNotification(
             NotifierEnum::confirm_signed_project_form->value,
             $message,
-            "/dashboard/approval?order=desc&sch_col=requester_id&sch_val={$organization_id}&m_t=52&s_t=pending",
+            "/dashboard/approval?order=desc&sch_col=requester_id&sch_val={$organization_id}&m_t=54&s_t=pending",
             null,
             PermissionEnum::projects->value,
             'projects'

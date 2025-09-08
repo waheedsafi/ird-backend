@@ -18,50 +18,39 @@ class ActivityController extends Controller
         $perPage = $request->input('per_page', 10); // Number of records per page
         $page = $request->input('page', 1); // Current page
 
-        // Start building the query
-        // $query = DB::table('user_login_logs as log')
-        //     ->leftJoin(DB::raw('(SELECT id, username, profile, "User" as user_type FROM users 
-        //                      UNION ALL 
-        //                      SELECT id, username, profile, "Ngo" as user_type FROM ngos) as usr'), function ($join) {
-        //         $join->on('log.userable_id', '=', 'usr.id')
-        //             ->whereRaw('log.userable_type = usr.user_type');
-        //     })
-        //     ->select(
-        //         "log.id",
-        //         "usr.username",
-        //         "usr.profile",
-        //         "log.userable_type",
-        //         "log.action",
-        //         "log.ip_address",
-        //         "log.browser",
-        //         "log.device",
-        //         "log.created_at as date",
-        //     );
         $query = DB::table('user_login_logs as log')
-            ->leftJoin(DB::raw('(
-        SELECT id, username, profile, \'User\' as user_type 
+
+            // Join with users table when userable_type = 'User'
+            ->leftJoin(DB::raw("(
+        SELECT id, username, profile, 'User' as user_type
         FROM users
-    ) as usr'), function ($join) {
+    ) as usr"), function ($join) {
                 $join->on('log.userable_id', '=', 'usr.id')
-                    ->whereRaw('log.userable_type = usr.user_type');
+                    ->whereRaw("log.userable_type = usr.user_type");
             })
+
+            // Join with organizations table when userable_type = 'Organization'
+            ->leftJoin(DB::raw("(
+        SELECT id, username, profile, 'Organization' as user_type
+        FROM organizations
+    ) as org"), function ($join) {
+                $join->on('log.userable_id', '=', 'org.id')
+                    ->whereRaw("log.userable_type = org.user_type");
+            })
+
+            // Select fields (merged username/profile using COALESCE)
             ->select(
                 "log.id",
-                "usr.username",
-                "usr.profile",
+                DB::raw("COALESCE(usr.username, org.username) as username"),
+                DB::raw("COALESCE(usr.profile, org.profile) as profile"),
                 "log.userable_type",
                 "log.action",
                 "log.ip_address",
                 "log.browser",
                 "log.platform",
-                "log.created_at as date",
+                "log.created_at as date"
             );
-        $this->applyDate($query, $request, 'log.created_at', 'log.created_at');
-        $this->applySearch($query, $request, [
-            'username' => 'usr.username',
-            'action' => 'log.action',
-            'ip_address' => 'log.ip_address'
-        ]);
+
 
         // Apply pagination (ensure you're paginating after sorting and filtering)
         $tr = $query->paginate($perPage, ['*'], 'page', $page);

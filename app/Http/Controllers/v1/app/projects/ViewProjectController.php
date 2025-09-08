@@ -70,6 +70,7 @@ class ViewProjectController extends Controller
                 'dont.name as donor',
                 'st.name as status',
                 'ps.status_id',
+                'pro.registration_no',
                 'pro.created_at'
             );
         $this->applyDate($query, $request, 'pro.created_at', 'pro.created_at');
@@ -77,9 +78,22 @@ class ViewProjectController extends Controller
             'title' => 'prot.title',
             'donor' => 'dont.donor'
         ];
-        $this->applyFilters($query, $request, $allowColumn);
 
-        $this->applySearch($query, $request, $allowColumn);
+
+        $this->applyDate($query, $request, 'pro.created_at', 'pro.created_at');
+        $this->applyFilters($query, $request, [
+            'registration_no' => 'pro.registration_no',
+            'project_name' => 'prot.name',
+            'donor' => 'dont.name',
+            'status' => 'st.name',
+            'currency' => 'curt.name'
+        ]);
+        $this->applySearch($query, $request, [
+            'registration_no' => 'pro.registration_no',
+            'project_name' => 'prot.name',
+            'donor' => 'dont.name',
+            'budget' => 'pro.total_budget',
+        ]);
 
         $result = $query->paginate($perPage, ['*'], 'page', $page);
 

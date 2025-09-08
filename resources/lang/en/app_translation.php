@@ -85,6 +85,6 @@ return [
     'project_not_belongs_tu' => 'Project not belongs to you.',
     'project_not_fou' => 'Project not found.',
     'project_sent_for_approval' => 'Project :username is sent for approval.',
-    'project_doc_approved' => 'Project :username is documents have been approved.',
-    'project_doc_rejected' => 'Project :username is documents have been rejected.',
+    'project_doc_approved' => 'Project :username documents have been approved.',
+    'project_doc_rejected' => 'Project :username documents have been rejected.',
 ];

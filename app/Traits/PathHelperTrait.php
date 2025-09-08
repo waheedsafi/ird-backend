@@ -67,7 +67,7 @@ trait PathHelperTrait
     }
     public function getProjectApprovalDBPath($organization_id, $project_id, $fileName)
     {
-        return "organization_{$organization_id}/projects/project_{$project_id}/approval/" . $fileName;
+        return "organizations/organization_{$organization_id}/projects/project_{$project_id}/approval/" . $fileName;
     }
     public function getScheduleRegisterFolder($schedule_id)
     {

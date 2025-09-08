@@ -19,17 +19,21 @@ use App\Http\Requests\v1\about\StaffStoreRequest;
 use App\Http\Requests\v1\about\OfficeStoreRequest;
 use App\Http\Requests\v1\about\StaffUpdateRequest;
 use App\Http\Requests\v1\about\OfficeUpdateRequest;
+use App\Traits\CacheKeyTrait;
 
 class AboutController extends Controller
 {
-    use FileHelperTrait, PathHelperTrait;
+    use FileHelperTrait, PathHelperTrait, CacheKeyTrait;
     private $cacheOffice = "about_office";
     private $cacheStaff = "about_staff";
+    private $cacheManger = "about_manager";
+    private $cacheTechnical = "about_technical";
+    private $cacheDirector = "about_director";
 
     public function staffs()
     {
         $locale = App::getLocale();
-        $cacheKey = $this->cacheStaff . '_' . $locale;
+        $cacheKey = $this->getKey($this->cacheStaff);
         $query  = Cache::remember($cacheKey, 1800, function () use ($locale) {
             return DB::table('about_staff as as')
                 ->join('about_staff_trans as ast', function ($join) use ($locale) {
@@ -60,8 +64,10 @@ class AboutController extends Controller
 
     public function manager()
     {
+        $cacheKey = $this->getKey($this->cacheStaff);
+
         return response()->json(
-            $this->staffByType(AboutStaffEnum::manager->value)->first(),
+            $this->staffByType(AboutStaffEnum::manager->value, $cacheKey, true),
             200,
             [],
             JSON_UNESCAPED_UNICODE
@@ -69,8 +75,10 @@ class AboutController extends Controller
     }
     public function technicalSupport()
     {
+        $cacheKey = $this->getKey($this->cacheTechnical);
+
         return response()->json(
-            $this->staffByType(AboutStaffEnum::technical_support->value)->get(),
+            $this->staffByType(AboutStaffEnum::technical_support->value, $cacheKey),
             200,
             [],
             JSON_UNESCAPED_UNICODE
@@ -79,8 +87,10 @@ class AboutController extends Controller
     // Director
     public function director()
     {
+        $cacheKey = $this->getKey($this->cacheDirector);
+
         return response()->json(
-            $this->staffByType(AboutStaffEnum::director->value)->first(),
+            $this->staffByType(AboutStaffEnum::director->value, $cacheKey, true),
             200,
             [],
             JSON_UNESCAPED_UNICODE
@@ -241,12 +251,10 @@ class AboutController extends Controller
             ]
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
-    public function staffByType($type)
+    public function staffByType($type, $cacheKey, $selectOne = false)
     {
-        $locale = App::getLocale();
-        $cacheKey = $this->cacheStaff . '_' . $type . '_' . $locale;
-        return Cache::remember($cacheKey, 1800, function () use ($locale, $type) {
-            return DB::table('about_staff as as')
+        return Cache::remember($cacheKey, 1800, function () use ($type, &$selectOne) {
+            $query = DB::table('about_staff as as')
                 ->where('as.about_staff_type_id', $type)
                 ->join('about_staff_trans as ast', 'ast.about_staff_id', '=', 'as.id')
                 ->select(
@@ -262,6 +270,11 @@ class AboutController extends Controller
                     DB::raw("MAX(CASE WHEN ast.language_name = 'ps' THEN ast.name END) as name_pashto")
                 )
                 ->groupBy('as.id', 'as.about_staff_type_id', 'as.contact', 'as.email', 'as.profile', 'as.created_at', 'as.updated_at');
+            if ($selectOne) {
+                return $query->first();
+            } else {
+                return $query->get();
+            }
         });
     }
     // Office

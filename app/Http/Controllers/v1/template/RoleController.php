@@ -57,6 +57,7 @@ class RoleController extends Controller
                     $join->on('rt.role_id', '=', 'rai.assignee_role_id')
                         ->where('rt.language_name', $locale);
                 })
+                ->whereNotIn('rt.role_id', [RoleEnum::debugger->value, RoleEnum::super->value])
 
                 ->select('rt.role_id as id', "rt.value as name")
                 ->get();
