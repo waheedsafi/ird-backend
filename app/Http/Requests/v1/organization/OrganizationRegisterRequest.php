@@ -26,8 +26,14 @@ class OrganizationRegisterRequest extends FormRequest
             'contact' => 'required|unique:contacts,value',
             'province_id' => 'required|integer|exists:provinces,id',
             'district_id' => 'required|integer|exists:districts,id',
-            "password" => "required",
-            'area_english' => 'required|string|max:200',
+            "password" => [
+                'required',
+                'regex:/^[A-Za-z0-9!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/]+$/',
+                'max:50',
+                'min:8'
+            ],
+
+            'aea_english' => 'required|string|max:200',
             'area_farsi' => 'required|string|max:200',
             'area_pashto' => 'required|string|max:200',
             'abbr' => [

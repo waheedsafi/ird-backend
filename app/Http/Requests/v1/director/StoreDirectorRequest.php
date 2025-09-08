@@ -28,7 +28,8 @@ class StoreDirectorRequest extends FormRequest
             'name_pashto' => 'required|string|max:128',
             'name_farsi' => 'required|string|max:128',
             'gender.id' => 'required|exists:genders,id',
-            'email' => 'required|email|unique:emails,value',
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+
             'contact' => 'required|unique:contacts,value',
             'nid' => 'required|string|max:50|unique:directors,nid_no',
             'identity_type.id' => 'required|exists:nid_types,id',

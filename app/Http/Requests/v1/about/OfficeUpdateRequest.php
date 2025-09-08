@@ -23,7 +23,8 @@ class OfficeUpdateRequest extends FormRequest
     {
         return [
             'id' => 'required',
-            'email' => 'required|email',
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+
             'contact' => 'required',
             'address_english' => 'required|string',
             'address_farsi' => 'required|string',

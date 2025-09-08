@@ -23,7 +23,8 @@ class StaffUpdateRequest extends FormRequest
     {
         return [
             'id' => 'required',
-            'email' => 'required|email',
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+
             'contact' => 'required',
             'name_english' => 'required|string',
             'name_pashto' => 'required|string',

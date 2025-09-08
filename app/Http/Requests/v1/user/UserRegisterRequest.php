@@ -25,7 +25,12 @@ class UserRegisterRequest extends FormRequest
             "full_name" => ['required', "string", "min:3", "max:45"],
             "username" => ['required', "string", "min:3", "max:45"],
             "email" => ["required", "email"],
-            "password" => ["required", "string", "min:8", "max:25"],
+            "password" => [
+                'required',
+                'regex:/^[A-Za-z0-9!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/]+$/',
+                'max:50',
+                'min:8'
+            ],
             "role" => ["required"],
             "job" => ["required"],
             "job_id" => ["required"],
