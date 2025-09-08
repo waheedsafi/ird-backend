@@ -36,8 +36,7 @@ Route::prefix('v1')->middleware(["multiAuthorized:" . 'organization:api,user:api
     Route::post('/projects/signed/mou', [StoreProjectController::class, 'StoreSignedMou'])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'add']);
 });
 
-
-// Move to schedule
-Route::prefix('v1')->middleware(["multiAuthorized:" . 'user:api'])->group(function () {
+Route::prefix('v1')->middleware(["authorized:" . 'user:api'])->group(function () {
+    Route::get('/projects-org', [ViewProjectController::class, 'orgIndex'])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'view']);
     Route::get('/projects/with/name', [ViewProjectController::class, "projectsWithName"]);
 });

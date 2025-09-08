@@ -33,6 +33,76 @@ class ViewProjectController extends Controller
         $perPage = $request->input('per_page', 10); // Number of records per page
         $page = $request->input('page', 1); // Current page
         $locale = App::getLocale();
+        $authUser = $request->user();
+
+        $query = DB::table('projects as pro')
+            ->join('project_trans as prot', function ($join) use ($locale) {
+                $join->on('pro.id', '=', 'prot.project_id')
+                    ->where('prot.language_name', $locale);
+            })
+            ->join('project_statuses as ps', function ($join) {
+                $join->on('ps.project_id', '=', 'pro.id')
+                    ->where('ps.is_active', true);
+            })
+            ->join('status_trans as st', function ($join)  use ($locale) {
+                $join->on('st.status_id', '=', 'ps.status_id')
+                    ->where('st.language_name', $locale);
+            })
+            ->join('donor_trans as dont', function ($join) use ($locale) {
+                $join->on('dont.donor_id', 'pro.donor_id')
+                    ->where('dont.language_name', $locale);
+            })
+            ->join('currency_trans as curt', function ($join) use ($locale) {
+                $join->on('pro.currency_id', 'curt.currency_id')
+                    ->where('curt.language_name', $locale);
+            })
+            ->select(
+                'pro.id',
+                'pro.total_budget as budget',
+                'pro.start_date',
+                'curt.name as currency',
+                'pro.end_date',
+                'pro.donor_registration_no',
+                'prot.name as project_name',
+                'dont.name as donor',
+                'st.name as status',
+                'ps.status_id',
+                'pro.registration_no',
+                'pro.created_at'
+            );
+        $this->applyDate($query, $request, 'pro.created_at', 'pro.created_at');
+        $allowColumn = [
+            'title' => 'prot.title',
+            'donor' => 'dont.donor'
+        ];
+
+
+        $this->applyDate($query, $request, 'pro.created_at', 'pro.created_at');
+        $this->applyFilters($query, $request, [
+            'registration_no' => 'pro.registration_no',
+            'project_name' => 'prot.name',
+            'donor' => 'dont.name',
+            'status' => 'st.name',
+            'currency' => 'curt.name'
+        ]);
+        $this->applySearch($query, $request, [
+            'registration_no' => 'pro.registration_no',
+            'project_name' => 'prot.name',
+            'donor' => 'dont.name',
+            'budget' => 'pro.total_budget',
+        ]);
+
+        $result = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json([
+            'projects' => $result
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+    public function orgIndex(Request $request)
+    {
+        $perPage = $request->input('per_page', 10); // Number of records per page
+        $page = $request->input('page', 1); // Current page
+        $locale = App::getLocale();
 
         $authUser = $request->user();
         $user_id = $authUser->id;
@@ -299,7 +369,8 @@ class ViewProjectController extends Controller
                     $tran = $districtTrans[$district->id]->firstWhere('language_name', $code);
                     $villageData["village_$lang"] = json_decode($tran->villages ?? '[]', true);
                 }
-                $item['villages'][] = $villageData;
+                $item['villages'][(int)$district->district_id] = $villageData;
+                $item['selectedDistrictId'] = (int)$district->district_id;
             }
 
             $result[] = $item;
