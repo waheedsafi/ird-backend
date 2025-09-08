@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['https://iracd.moph.gov.af,http://localhost:5173,http://172.16.5.84:8080'],
 
     'allowed_origins_patterns' => [],
 
