@@ -22,7 +22,8 @@ class OrganizationRegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|unique:emails,value',
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+
             'contact' => 'required|unique:contacts,value',
             'province_id' => 'required|integer|exists:provinces,id',
             'district_id' => 'required|integer|exists:districts,id',
