@@ -54,7 +54,8 @@ class OrganizationInitStoreRequest extends FormRequest
             "abbr" => "required|string",
             "type.id" => "required|exists:organization_types,id",
             "contact" => "required",
-            "email" => "required",
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+
             "country.id" => "required|exists:countries,id",
             "establishment_date" => "required",
             "province.id" => "required|exists:provinces,id",

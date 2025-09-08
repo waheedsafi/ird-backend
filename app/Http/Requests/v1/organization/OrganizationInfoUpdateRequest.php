@@ -60,7 +60,8 @@ class OrganizationInfoUpdateRequest extends FormRequest
             "area_pashto" => "required|max:128|min:5",
             "area_farsi" => "required|max:128|min:5",
             "contact" => "required",
-            "email" => "required",
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+
         ];
     }
 

@@ -53,7 +53,8 @@ class ExtendOrganizationRequest extends FormRequest
             "name_pashto" => 'required|string|max:128|min:5',
             "abbr" => "required|string",
             "contact" => "required",
-            "email" => "required",
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+
             "moe_registration_no" => "required|unique:organizations,moe_registration_no",
             "province.id" => "required|exists:provinces,id",
             "district.id" => "required|exists:districts,id",

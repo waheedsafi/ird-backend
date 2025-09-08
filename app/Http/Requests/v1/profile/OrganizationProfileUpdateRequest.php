@@ -16,7 +16,8 @@ class OrganizationProfileUpdateRequest extends FormRequest
         return [
             'username' => ['required', 'string', 'max:45'],
             'contact' => ['required', 'string'],
-            'email' => ['required', 'email', 'max:45'],
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+
         ];
     }
 }
