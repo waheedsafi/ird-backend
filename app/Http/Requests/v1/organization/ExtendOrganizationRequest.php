@@ -51,7 +51,14 @@ class ExtendOrganizationRequest extends FormRequest
             "name_english" => 'required|string|max:128|min:5',
             "name_farsi" =>  'required|string|max:128|min:5',
             "name_pashto" => 'required|string|max:128|min:5',
-            "abbr" => "required|string",
+
+
+            'abbr' => [
+                'required',
+                'alpha', // only letters
+                'max:50',
+                'unique:organizations,abbr',
+            ],
             "contact" => "required",
             'email' => 'required|email:rfc,filter|unique:emails,value',
 
