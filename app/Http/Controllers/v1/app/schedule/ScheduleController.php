@@ -106,6 +106,7 @@ class ScheduleController extends Controller
         return response()->json($projects);
     }
 
+    public function submitSchedule(Request $request) {}
 
     public function store(ScheduleRequest $request)
     {

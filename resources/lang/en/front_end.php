@@ -588,4 +588,5 @@ return [
     "no_availble_doc" => "No documents available.",
     "hid_pren_info" => "Hide presentation Info",
     "sho_pren_info" => "Show presentation Info",
+    "is_pending" => "is pending"
 ];

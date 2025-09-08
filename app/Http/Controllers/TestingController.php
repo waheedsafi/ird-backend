@@ -6,6 +6,7 @@ use App\Models\News;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Email;
+use App\Models\Status;
 use App\Models\Project;
 use App\Models\NewsTran;
 use App\Models\NewsDocument;
@@ -17,6 +18,7 @@ use App\Models\NotifierTypeTrans;
 use App\Enums\Statuses\StatusEnum;
 use Illuminate\Support\Facades\DB;
 use App\Enums\Permissions\RoleEnum;
+use App\Enums\Types\StatusTypeEnum;
 use Illuminate\Support\Facades\App;
 use App\Enums\Types\ApplicationEnum;
 use Illuminate\Support\Facades\Hash;
@@ -495,20 +497,5 @@ class TestingController extends Controller
             ]
         ]);
     }
-    public function testing(Request $request)
-    {
-        $registered = StatusEnum::active->value;
-        $block = StatusEnum::block->value;
-        $locale = App::getLocale();
-        $page = $request->input('page', 1); // Current page
-
-        $query = $this->approvalRepository->getByNotifierTypeAndRequesterType(
-            ApprovalTypeEnum::rejected->value,
-            Project::class
-        );
-
-        $approvals = $query->paginate(10, ['*'], 'page', $page);
-
-        return response()->json($approvals, 200, [], JSON_UNESCAPED_UNICODE);
-    }
+    public function testing(Request $request) {}
 }
