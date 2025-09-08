@@ -4,23 +4,28 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use App\Models\Gender;
-use App\Models\OrganizationType;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\NidType;
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Currency;
 use App\Models\Language;
 use App\Models\NewsType;
 use App\Models\Priority;
 use App\Models\GenderTrans;
 use App\Models\CurrencyTran;
-use App\Models\OrganizationTypeTrans;
 use App\Models\NidTypeTrans;
+use App\Models\Organization;
 use App\Models\NewsTypeTrans;
 use App\Models\PriorityTrans;
+use App\Models\RoleAssignment;
 use Illuminate\Database\Seeder;
-use App\Enums\Types\OrganizationTypeEnum;
+use App\Models\OrganizationType;
+use App\Models\RoleAssignmentItem;
+use App\Enums\Permissions\RoleEnum;
 use App\Enums\Statuses\PriorityEnum;
-use App\Models\Organization;
+use App\Models\OrganizationTypeTrans;
+use App\Enums\Permissions\PermissionEnum;
+use App\Enums\Types\OrganizationTypeEnum;
+use App\Enums\Permissions\SubPermissionEnum;
 
 /*
 1. If you add new Role steps are:
@@ -81,6 +86,9 @@ class DatabaseSeeder extends Seeder
         $this->newsTypes();
         $this->priorityTypes();
         $this->nidTypes();
+
+        $this->userRoleAssignment(RoleEnum::super->value);
+        $this->userRoleAssignment(RoleEnum::administrator->value);
     }
 
     public function languages(): void
@@ -375,5 +383,20 @@ class DatabaseSeeder extends Seeder
             "language_name" => "en",
             "nid_type_id" => $nid->id
         ]);
+    }
+    private function userRoleAssignment($role_id)
+    {
+        // Create assignment role
+        $roleAssignment = RoleAssignment::create([
+            'assigned_by' => RoleEnum::super->value,
+            'assigner_role_id' => $role_id,
+            'permission' => PermissionEnum::users->value,
+        ]);
+        foreach (SubPermissionEnum::USERS as $id => $data) {
+            RoleAssignmentItem::create([
+                'role_assignment_id' => $roleAssignment->id,
+                'assignee_role_id' => $id,
+            ]);
+        }
     }
 }

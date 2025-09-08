@@ -4,9 +4,13 @@ namespace Database\Seeders;
 
 use App\Models\Role;
 use App\Models\RoleTrans;
+use App\Models\RoleAssignment;
 use Illuminate\Database\Seeder;
+use App\Models\RoleAssignmentItem;
 use Illuminate\Support\Facades\DB;
 use App\Enums\Permissions\RoleEnum;
+use App\Enums\Permissions\PermissionEnum;
+use App\Enums\Permissions\SubPermissionEnum;
 
 class RoleSeeder extends Seeder
 {

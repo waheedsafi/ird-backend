@@ -579,5 +579,11 @@ return [
     "no_pre_bf_lu" => "Number of presentations scheduled before lunch break.",
     "no_pre_af_lu" => "Number of presentations scheduled after lunch break.",
     "use_24" => "Use 24-hour time format",
-    "unassigned" => "Unassigned"
+    "unassigned" => "Unassigned",
+    "time" => "Time",
+    "lunch" => "Lunch",
+    "gap" => "Gap",
+    "hide_doc" => "Hide Documents",
+    "show_doc" => "Show Documents",
+    "no_availble_doc" => "No documents available."
 ];
