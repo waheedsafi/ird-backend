@@ -63,9 +63,9 @@ class ProjectPdfController extends Controller
 
             // STEP 1: Configure TOC
             $mpdf->TOC([
-                'toc-preHTML' => '<h1 style="text-align:center;">Table of Contents</h1><div class="toc">',
+                'toc-preHTML' => '<h1 style="text-align:center;">فهرست عناوین</h1><div class="toc">',
                 'toc-postHTML' => '</div>',
-                'toc-bookmarkText' => 'Table of Contents',
+                'toc-bookmarkText' => 'فهرست عناوین',
                 'paging' => true,
                 'links' => true,
             ]);
@@ -127,7 +127,15 @@ class ProjectPdfController extends Controller
             unlink($file);
         }
 
+        return response()->stream(function () use ($zipFile) {
+            readfile($zipFile);        // Send the file content to the browser
+            unlink($zipFile);          // Delete the file after sending
+        }, 200, [
+            'Content-Type' => 'application/zip',
+            'Content-Disposition' => 'inline; filename="' . basename($zipFile) . '"',
+        ]);
         // Download ZIP and delete after sending
+        return response()->file($zipFile);
         return response()->download($zipFile)->deleteFileAfterSend(true);
     }
 

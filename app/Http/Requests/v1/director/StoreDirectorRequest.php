@@ -30,7 +30,7 @@ class StoreDirectorRequest extends FormRequest
             'gender.id' => 'required|exists:genders,id',
             'email' => 'required|email|unique:emails,value',
             'contact' => 'required|unique:contacts,value',
-            'nid' => 'required|string|max:50|exists:directors,nid_no',
+            'nid' => 'required|string|max:50|unique:directors,nid_no',
             'identity_type.id' => 'required|exists:nid_types,id',
             'nationality.id' => 'required|exists:nationalities,id',
             'province.id' => 'required|exists:provinces,id',

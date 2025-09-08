@@ -1,23 +1,23 @@
 <br>
-{!! '<tocentry content="Goals" level="3" />' !!}
+{!! '<tocentry content="اهداف پروژه" level="3" />' !!}
 <h5>
-    Goals: </h5>
+    اهداف پروژه: </h5>
 {{ $goals }}
 <br>
-{!! '<tocentry content="Objectives" level="3" />' !!}
+{!! '<tocentry content=" مقاصد پروژه:" level="3" />' !!}
 <h5>
 
-    Objectives: </h5>
+    مقاصد پروژه: </h5>
 {{ $objectives }}
 <br>
-{!! '<tocentry content="Expected Outcomes" level="3" />' !!}
+{!! '<tocentry content=" نتایج متوقع:" level="3" />' !!}
 <h5>
-    Expected Outcomes: </h5>
+    نتایج متوقع: </h5>
 {{ $expected_outcomes }}
 <br>
-{!! '<tocentry content="Expected Impact:" level="3" />' !!}
+{!! '<tocentry content="تأثيرات متوقعه:" level="3" />' !!}
 <h5>
-    Expected Impact: </h5>
+    تأثيرات متوقعه: </h5>
 {{ $expected_impact }}
 <br>
 </p>
@@ -28,73 +28,71 @@
 <div class="article-title">
 
     <h3>
-        Article Ten</h3>
+        مادۀه دهم</h3>
 
 </div>
-{!! '<tocentry content="Project Description" level="3" />' !!}
+{!! '<tocentry content="طرح عمومی پروژه" level="3" />' !!}
 <h4>
-    Project Description : </h4>
+    طرح عمومی پروژه </h4>
 
 {{-- {{ $backgroud_experince }} --}}
 
 <table width="100%" style="border-collapse: collapse; font-size: 13px; margin-top: 20px;">
     <!-- Subject -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black; width: 35%;">Subject
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black; width: 35%;">موضوع پروژه
         </td>
         <td style="padding: 6px; border: 1px solid black">{{ $subject }}</td>
     </tr>
 
     <!-- Goals -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Goals</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">اهداف پروژه</td>
         <td style="padding: 6px; border: 1px solid black">{{ $goals }}</td>
     </tr>
 
     <!-- Objectives -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Objectives</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">مقاصد پروژه</td>
         <td style="padding: 6px; border: 1px solid black">{{ $objectives }}</td>
     </tr>
 
     <!-- Main Activities -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Main Activities</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">فعالیت هاي اساسی پروژه</td>
         <td style="padding: 6px; border: 1px solid black">{!! nl2br(e($activities)) !!}</td>
     </tr>
 
     <!-- Implementing Organization -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Implementing
-            Organization</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">موسسه تطبیق کننده</td>
         <td style="padding: 6px; border: 1px solid black">{{ $implementing_org }}</td>
     </tr>
 
     <!-- Funded by -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Funded by</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">نهاد تمويل کننده</td>
         <td style="padding: 6px; border: 1px solid black">{{ $funder }}</td>
     </tr>
 
     <!-- Total Budget -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Total Budget</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">مقدارمجموعي بودجه</td>
         <td style="padding: 6px; border: 1px solid black">{{ $budget }}</td>
     </tr>
 
     <!-- Duration (Nested with border) -->
     <tr>
         <td style="background-color: #d9e2f3; padding: 6px; vertical-align: top; border: 1px solid black">
-            Duration</td>
+            مدت پروژه</td>
         <td style="padding: 0px; border: 1px solid black">
             <table width="100%" style="border-collapse: collapse; font-size: 13px; border: 1px solid black">
                 <tr>
-                    <td style="padding: 6px; border: 1px solid black width: 30%;"><strong>Start
-                            Date:</strong></td>
+                    <td style="padding: 6px; border: 1px solid black width: 30%;"><strong>تاریخ آغاز:</strong></td>
                     <td style="padding: 6px; border: 1px solid black">{{ $start_date }}</td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px; border: 1px solid black;"><strong>Finish Date:</strong></td>
+                    <td style="padding: 6px; border: 1px solid black;"><strong>تاریخ ختم:</strong></td>
                     <td style="padding: 6px; border: 1px solid black;">{{ $end_date }}</td>
                 </tr>
             </table>
@@ -103,61 +101,57 @@
 
     <!-- MOU Date -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Date of signing of MOU
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">تاریخ امضآ تفاهم نام
         </td>
         <td style="padding: 6px; border: 1px solid black">{{ $mou_date }}</td>
     </tr>
 
     <!-- Location -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Location</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">موقعیت پروژه</td>
         <td style="padding: 6px; border: 1px solid black">{{ $location }}</td>
     </tr>
 
     <!-- Provinces covered -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Provinces covered</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">ولایات مربوطه</td>
         <td style="padding: 6px; border: 1px solid black">{{ $provinces }}</td>
     </tr>
 
     <!-- Areas covered -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Areas, Villages or
-            Districts covered</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">موقعیت ها٬ قریه ها و ولسوالی های
+            تحت پوشش</td>
         <td style="padding: 6px; border: 1px solid black">{{ $areas }}</td>
     </tr>
 
     <!-- Beneficiaries -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">No. of Direct
-            Beneficiaries</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">تعداد مستفدين مستقیم</td>
         <td style="padding: 6px; border: 1px solid black">{{ $direct_beneficiaries }}</td>
     </tr>
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">No. of Indirect
-            Beneficiaries</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">تعداد مستفدين غیر مستقیم </td>
         <td style="padding: 6px; border: 1px solid black">{{ $indirect_beneficiaries }}</td>
     </tr>
 
     <!-- Project Staff (Nested with border) -->
     <tr>
         <td style="background-color: #d9e2f3; padding: 6px; vertical-align: top; border: 1px solid black">
-            Project Staff (with provincial staff)</td>
+            تعداد كارمندان پروژه با تفکیک ولایات </td>
         <td style="padding: 1px; border: 1px solid black">
             <table width="100%" style="border-collapse: collapse; font-size: 13px; border: 1px solid black">
                 <tr>
-                    <td style="padding: 6px; border: 1px solid black width: 40%;"><strong>Organizational
-                            structure:</strong></td>
+                    <td style="padding: 6px; border: 1px solid black width: 40%;"><strong>ساختار اداری
+                            :</strong></td>
                     <td style="padding: 6px; border: 1px solid black">{{ $org_structure }}</td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px; border: 1px solid black"><strong>No. and type of Health
-                            Staff:</strong></td>
+                    <td style="padding: 6px; border: 1px solid black"><strong>صحی (نوعیت):</strong></td>
                     <td style="padding: 6px; border: 1px solid black">{{ $health_staff }}</td>
                 </tr>
                 <tr>
-                    <td style="padding: 6px; border: 1px solid black"><strong>No. & type of Administrative
-                            Staff:</strong></td>
+                    <td style="padding: 6px; border: 1px solid black"><strong>اداری و مالی:</strong></td>
                     <td style="padding: 6px; border: 1px solid black">{{ $admin_staff }}</td>
                 </tr>
             </table>
@@ -166,24 +160,23 @@
 
     <!-- Action Plan -->
     <tr>
-        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">Action Plan</td>
+        <td style="background-color: #d9e2f3; padding: 6px; border: 1px solid black">پلان عملیاتی </td>
         <td style="padding: 6px; border: 1px solid black">{!! nl2br(e($action_plan)) !!}</td>
     </tr>
 </table>
 
 <br>
-{!! '<tocentry content="Contact Information" level="3" />' !!}
+{!! '<tocentry content="معلومات تماس:" level="3" />' !!}
 <h5>
-    Contact Information:</h5><br>
+    معلومات تماس:</h5><br>
 {{-- {{ $provision_health_service }} --}}
 
 <table width="100%" style="border-collapse: collapse; font-size: 13px; margin-top: 20px;">
     <!-- Subject -->
     <thead>
         <tr style="background-color: #f2f2f2;">
-            <th style="border: 1px solid black; padding: 8px;">CEO/Person in charge of the <br> Organization
-                in Afghanistan </th>
-            <th style="border: 1px solid black; padding: 8px;">Focal Person for the current project</th>
+            <th style="border: 1px solid black; padding: 8px;">مسؤول موسسه در افغانستان </th>
+            <th style="border: 1px solid black; padding: 8px;">مسؤول پروژه فعلی</th>
         </tr>
     </thead>
     <tr>
@@ -207,51 +200,53 @@
 <div class="article-title">
 
     <h3>
-        Article Eleven</h3>
+        مادۀ یازدهم</h3>
 
 </div>
-{!! '<tocentry content="Responsibilities and Commitments of the Organization" level="3" />' !!}
+{!! '<tocentry content="تعهدات و مسئولیت های موسسه در قبال اجرای پروژه: " level="3" />' !!}
 <h4>
-    Responsibilities and Commitments of the Organization: </h4>
+    تعهدات و مسئولیت های موسسه در قبال اجرای پروژه: </h4>
 
-1. The Organization has to present a detailed work plan to be agreed in the project’s contract (xxxxxxxx),
-prior to commencing the activities mentioned in this MoU.
+1: موسسه مکلف است تا طرح مفصل/پلان کاری پروژه را قبل از آغاز اجرای فعالیت های آن به کمیته موظف که توسط وزارت صحت
+عامه رهبری می شود تقدیم کند.
 <br>
-2. The Organization is fully responsible and committed for proper implementation of the project work plan
-and
-activities as outlined in the MoU. The Organization agrees to perform the necessary activities transparently
-and in an accountable manner. Furthermore, the Organization is committed to make available sufficient
-financial, human and other resources for the implementation of the project’s activities and fulfillment of
-its goals and objectives.
+2: موسسه مسؤلیت کامل اجراء و تطبیق درست فعالیت هاي پروگرام را كه در تفاهم نامه ذکر است، ميداشته باشد. موسسه با اجراء
+كار به شکل شفاف و حسابده موافق بوده و با استفاده از منابع كه برای تطبیق فعالیت ها لازمي میباشد متعهد است. علاوتا
+موسسه متعهد است تا منابع لازم و کافی مالی٬ بشری و غیره را برای تطبیق فعالیت های پروژه و بدست آوردن اهداف و مقاصد
+خویش فراهم نماید.
 <br>
-3. The Organization is liable to start and implement all activities relevant to the current project in
-accordance with the policies and strategies of the MoPH and all laws and regulations of the country.
-<br>
-4. The Organization will provide the financial and program activities reports on quarterly, semiannually and
-annually, according to the health system information and standards to relevant departments of the MoPH and
-Provincial Health Directorates of {{ $project_provinces }} provinces.
-<br>
-5. The Organization agrees that MoPH has the right to monitor and evaluate the all activities of project &
-implementation plan of the Organization’s project in relevant provinces in grant period.
-<br>
-6. The Organization agrees to deliver all project activities free of cost to the beneficiaries.
 
+3: موسسه مکلف است كه تمام فعالیت هاي خويش را مطابق به پاليسي ها و استراتیژی هاي وزارت صحت عامه، قوانین و معیارات
+کشور آغاز و تطبيق نمايد.
 <br>
-7. The Organization will perform all project activities in coordination with Provincial Health
-Directorate of
-{{ $project_provinces }} provinces and will participate in the relevant coordination meetings and utilize
-the guidance and
-cooperation of the Directorate when necessary. <br>
 
-8. According to the policies of Ministry of Public Health, the outcomes of the completed project will be
-shared with the MoPH and the provincial health directorate at the end of the project.
+4: موسسه مسؤلیت دارد كه به اساس معیارات سیستم معلومات صحی وزارت صحت عامه، گزارش فعالیت های صحی ومالی پروژه خويش را
+تهیه داشته و بصورت ربعوار، شش ماه و سالانه به دیپارتمنت هاي مربوطه وزارت صحت عامه و ریاست صحت عامه ولايت (ررررر)
+ارسال نماید.
 <br>
-9. The Organization shall get the documents of its medical doctors, nurses, midwives and health personnel
-certified by the concerned Provincial Health Directorate, Health legislation Directorate and the General
-Directorate of Human Resources of MoPH, otherwise the responsibility lies with the Organization.
+
+5: موسسه موافق است تا وزارت صحت عامه ازتمام فعاليت های پروژه و پلان کاری موسسه متذكره در جريان قرار داد، نظارت و
+ارزيابی نمايد.
 <br>
-10. The Organization is responsible for facilitating the round-trip facilities and other necessities for the
-Ministry of public Health team during the supervision and monitoring the projects of that organization.
+
+6: موسسه موافق است که تمام فعالیت های خویش را به صورت رایگان برای مستفدین انجام دهد.
+<br>
+
+7: موسسه تمام فعالیت خويش را با هماهنگی ریاست صحت عامه ولايت (رررر) انجام داده٬ در مجالس مربوطه هماهنگی اشتراک نموده
+و همچنان از همكاري ها و راهنمايي هاي آن ریاست در صورت ضرورت استفاده خواهد نمود.
+<br>
+
+8: به اساس پالیسی های وزارت صحت عامه، نتایج پروژه که توسط موسسه (رررر) انجام میشود در ختم پروژه به وزارت صحت عامه و
+ریاست صحت عامه ولایت (رررر) راپور داده خواهد شد.
+<br>
+
+9: موسسه مکلفیت دارد تا اسناد داکتران ، نرس ها ، قابله ها و پرسونل صحی را که در بخش صحت با موسسه همکاری دارند بعد از
+تایید ریاست صحت عامه ولایات، ریاست بررسی از تطبیق قوانین صحی و ریاست عمومی منابع بشری وزارت صحت عامه عرضه خدمات صحی
+نماید در صورت عدم تایید اسناد متذکره مسوولیت متوجه موسسه می باشد.
+<br>
+
+10: موسسه مسولیت دارد که در جریان نظارت و ارزیابی از پروژه های ان موسسه امکانات رفت و برگشت و دیگر ضروریات را برای
+هییت بررسی کننده وزارت صحت عامه مساعد نماید.
 
 </p>
 
@@ -261,25 +256,26 @@ Ministry of public Health team during the supervision and monitoring the project
 <div class="article-title">
 
     <h3>
-        Article Twelve</h3>
+        مادۀ دوازدهم</h3>
 
 </div>
-{!! '<tocentry content="Responsibilities and Commitments of the MoPH" level="3" />' !!}
+{!! '<tocentry content="تعهدات و مسئولیت های وزارت صحت عامه در قبال موسسه و پروژه:" level="3" />' !!}
 <h4>
-    Responsibilities and Commitments of the MoPH: </h4>
-1. Wherever required, the MoPH will confirm that the Youth Health and Development Organization operates its
-activities in coordination with MoPH as a known entity.
+    تعهدات و مسئولیت های وزارت صحت عامه در قبال موسسه و پروژه: </h4>
+
+1: وزارت صحت عامه در مواقع نیاز عنوانی نهاد درخواست کننده تاييد خواهد كرد كه ( ) به عنوان يك نهاد شناخته شده با هماهنگي
+وزارت صحت عامه فعالیت مینماید.
 <br>
-2. The relevant Provincial Health Directorate has the responsibility to monitor and evaluate the quality of
-the project and activities of the Organization during the MoU period.
+2: ریاست صحت عامه ولايت مربوطه حق نظارت و ارزيابي از كيفيت پروژه و فعاليت هاي موسسه را در جريان تفاهم نامه دارد.
 <br>
-3. After finalization of MOU and relevant documents the MoPH will be informed the provincial health
-directorate of {{ $project_provinces }} provinces to provide the required support to the Organization,
-regarding the correct
-implementation of projects activities.
+
+3: وزارت صحت عامه بعد از امضا تفاهم نامه و اسناد مرتبط، ریاست صحت عامه ولايت ررررر را در جريان قرار خواهد داد تا با
+موسسه متذکره در قسمت تطبيق درست فعاليت هاي پروژه همكاري همه جانبه نمايد.
 <br>
-4. The MoPH has the right to terminate the MoU at any time during project implementation phase for its
-non-compliance with any of the above provisions of the MoU.
+
+4: در صورت عدم مطابقت فعاليت موسسه مذكور با مواد تصریح شده فوق، وزارت صحت عامه صلاحیت فسخ اين تفاهم نامه را در هر مقطع
+زمانی دارد.
+
 </p>
 
 {{-- article thirteen --}}
@@ -288,55 +284,45 @@ non-compliance with any of the above provisions of the MoU.
 <div class="article-title">
 
     <h3>
-        Article Thirteen</h3>
+        مادۀ سیزدهم</h3>
 
 </div>
-{!! '<tocentry content="Responsibilities and Commitments of both Parties" level="3" />' !!}
+{!! '<tocentry content="  تعهدات و مسئولیت های جانبین:" level="3" />' !!}
 <h4>
-    Responsibilities and Commitments of both Parties: </h4>
-1. The MoPH and the Organization will respect the principles of equity, transparency and non-discrimination
-on the basis of ethnicity, gender, religion and any other related factors.
+    تعهدات و مسئولیت های جانبین: </h4>
+1: وزارت صحت عامه و موسسه تطبیق کننده اصول مساوات ، شفافیت و عدم تبعیض را در مطابقت به نفوذ قومی، جنسی، مذهبي و دیگر
+فكتور ها رعایت خواهند کرد.
 <br>
 <p style="color: red">
-    2. In case the organization cannot fulfill its commitments, the Ministry of Public Health will pursue
-    the
-    unilateral termination of the MOU and the issue will follows through Justice and litigation.
+    2: در صورتیکه موسسه نتواند تعهدات خویش راعملی نماید وزارت صحت عامه فسخ یک جانبه تفاهم نامه و موضوع را ازجانب عدلی و
+    قضایی تعقیب خواهد کرد.
 </p>
+وزارت صحت عامه و موسسه موافقت می نمایند تا برای بدست آوردن اهداف خویش و برای تطبیق فعالیت های این تفاهم نامه تشریک مساعی
+نموده و رابطه نزدیک کاری می داشته باشند.
+<br>
+3: هر دو جانب تعهد به همکاری جهت انجام فعالیت های با کیفیت عالی برای تطبیق پالیسی و پروگرام های که هدف آن بهبود کیفیت
+عرضه خدمات صحی میباشد می نمایند.
+<br>
+4: هردو طرف معلومات تخنیکی را بدون کدام محدودیت از طریق مجالس، مباحثات رسمی و هماهنگی شریک خواهند ساخت.
+<br>
 
+5: هر دو جانب بالای تشکیل یک کمیته موظف که توسط نماینده وزارت صحت عامه رهبری می شود توافق نموده تا بالای پلان عملیاتی
+پروژه موافقت نموده و از تطبیق فعالیت های پروژه و پلان های آینده آن نظارت و بازدید کنند.
 <br>
-3. Both parties commit to work together for providing high quality services, to help in development and
-implementation of policy and programs, which aim to improve the quality of health services in Afghanistan.
+6: هر دو جانب بالای حفظ و نگهداشت معلومات٬ ارقام و اسناد بدست آمده از تطبیق فعالیت های ذکر شده در این تفاهم نامه توافق
+می نمایند.
 <br>
-4. Both parties will share technical information without any limitation or restriction through meetings,
-formal discussions and other mechanisms.
+7: معلومات ارایه شده از یک جانب به جانب دیگر طی این تفاهم نامه بصورت محرم نگهداری شده مگر اینکه این معلومات عام بوده و
+یا در مورد آن از قبل دانسته شود. تمام اهتمامات از هر دو جانب در جهت نگهداری معلومات گرفته خواهد شد و تنها برای مقصدی که
+ارایه شده است استفاده می شود.
 <br>
-5. Both MOPH/ and {{ $ngo_name }} parties agree to establish joint monitoring plan and agree to oversee
-the project
-progress, achievements according to the project contract and have jointly decision for implementation
-challenges in field the MOPH will lead this joint mission.
-<br>
-6. The Parties commit to protecting the data, information, and documentation resulting from carrying out
-work
-under the framework of this MoU.
-<br>
-7. Information provided by one Party to the other, in the context of this MoU, shall be treated as
-confidential, unless the information is publicly available and/or is already known. The Parties shall take
-all reasonable measures to keep the information confidential and shall only use the information for the
-purpose for which it was provided.
-<br>
-8. By completion and shut down of the Organization`s activities and mission in Afghanistan, in accordance
-with the NGOs laws, all materials, equipment and facilities of the Organization will be handed over to the
-MoPH/government of Afghanistan.
+8: در صورت كه فعاليت هاي عمومی موسسه مذکوردرافغانستان خاتمه پیدا ميكند طبق قانون موسسات تمام وسايل، تجهیزات وامکانات
+موسسه به دولت افغانستان سپرده خواهد شد.
 <br>
 <p style="color:red">
-    9. Disputes and internal conflicts will be resolved through discussion with Provincial Health
-    Coordination
-    Committee (PHCC) or central MoPH representatives. This MOU is valid for three years until the completion
-    of
-    the project .The Ministry of Public Health has the right to unilaterally amend and terminate it. MOU can
-    be
-    extended if the Organization can fulfill all its commitments and is acceptable to the MOPH.
-</p>
+    9: اختلافات طي مجالس کمیته هماهنگي صحي ولایتی و یا ذریعه نماینده گان مرکز وزارت صحت عامه حل و فصل میگردد. این تفاهم
+    نامه به مدت تکمیل پروژه به مدت یک سال قابل اعتبار بوده وزارت صحت عامه حق تعدیل و فسخ یک جانبه ان را دارد. درصورتیکه
+    موسسه بتواند تمام تعهدات اش را عملی نماید وقابل قبول وزارت صحت عامه قرارگیرد قابل تمدید میباشد.
 
 </p>
 
@@ -345,23 +331,25 @@ MoPH/government of Afghanistan.
 <div class="article-title">
 
     <h3>
-        Article Fourteen</h3>
+        مادۀ چهاردهم</h3>
 
 </div>
-{!! '<tocentry content="Implementation and Cancellation Date of the MoU" level="3" />' !!}
+{!! '<tocentry content=" تاریخ اجراء و فسخ تفاهم نامه:" level="3" />' !!}
 <h4>
-    Implementation and Cancellation Date of the MoU:
+    تاریخ اجراء و فسخ تفاهم نامه:
 </h4>
-This MoU is applicable and valid from the date of signing by the representative of MoPH and representative
-of the Organization. By singing this MoU, both parties hereby accept all articles and agree with all its
-obligations.
+تفاهم نامه زمانيكه توسط نمايندۀ موسسه و نمايندۀ وزارت صحت عامه امضاء گردید از تاریخ امضاء قابل اجراء مي باشد. با امضاء
+خويش هر يك طرفین اين تفاهم نامه تمام ماده هاي اين تفاهم نامه را قبول نموده وبا تمام تعهدات موجود در آن موافق هستند.
 <br>
-This memorandum can be modified or cancelled according to written agreement by both parties on the basis of
-convincing reasons. Two original copies of this MoU are signed, each party will have a copy.
+این تفاهم نامه به اساس توافق تحریری جوانب ذیدخل در صورت لزوم دید طرفین توسط مکتوب تحریری با ذکر دلایل مقنع میتواند تعدیل
+و یا فسخ گردد. این تفاهم نامه در دو نسخه اصل به امضاء می رسد که هر نهاد یک کاپی را باخود میداشته باشند.
+
 <br>
-The duration of this MoU from the June 2021 to end of December 2021.
+
+مدت اعتبار تفاهمنامه از تاریخ سال (...........) الی ختم ماه (..........) میباشد.
+
 <br>
-This MoU is signed by the following authorized persons.
+امضاء این تفاهم نامه توسط اشخاص با صلاحیت که اسماء شان در ذیل ذکر است صورت گرفته است:
 
 </p>
 
@@ -371,27 +359,26 @@ This MoU is signed by the following authorized persons.
 
 <div class="sing-page">
     <div class="irddirector">
-        <b> On behalf of the Ministry of Public Health</b>
+        <b> از طرف وزارت صحت عامه</b>
         <br>
         {{ $ird_director }}<br>
-        Mowlawi Noor Jalal “Jalali”
-        Acting Minister of Public Health
+        مولوی نورجلال"جلالی"
+        سرپرست وزارت صحت عامه
 
-        Signature
+        امضاْ
         ____________________________________
-        Date ( / / ):
+        تاریخ ( / / ):
 
-        Director of International Relations<br><br><br>
-        Signature:................................
     </div>
     <br>
 
     <div class="ngodirector">
-        <b>On behalf of the Organization</b> <br>
+        <b>از طرف موسسه</b> <br>
         <br>
-        Signature
+        امضاْ
         ____________________________________
-        Date ( / / ):
+        تاریخ ( / / ):
+
     </div>
 </div>
 
