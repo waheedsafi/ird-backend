@@ -519,8 +519,7 @@ class ScheduleController extends Controller
                     'end_time' => $row->end_time,
                     'project_id' => $row->project_id,
                     'project_name' => $row->project_name,
-                    'status_id' => $row->status_id,
-                    'status' => $row->status,
+                    'status' => ['id' => $row->status_id, 'name' => $row->status,],
                     'documents' => [],
                 ];
             }

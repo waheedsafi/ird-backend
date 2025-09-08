@@ -10,7 +10,6 @@ use App\Http\Controllers\v1\app\projects\StoreProjectController;
 use App\Http\Controllers\v1\app\projects\DeleteProjectController;
 
 Route::prefix('v1')->middleware(["multiAuthorized:" . 'organization:api,user:api'])->group(function () {
-    Route::get('/projects', [ViewProjectController::class, 'index'])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'view']);
     Route::post('/projects', [StoreProjectController::class, 'store'])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'add']);
 
     Route::get('/projects/register-form/{id}', [ViewProjectController::class, 'startRegisterForm'])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'add']);
@@ -37,6 +36,10 @@ Route::prefix('v1')->middleware(["multiAuthorized:" . 'organization:api,user:api
 });
 
 Route::prefix('v1')->middleware(["authorized:" . 'user:api'])->group(function () {
-    Route::get('/projects-org', [ViewProjectController::class, 'orgIndex'])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'view']);
+    Route::get('/projects', [ViewProjectController::class, 'index'])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'view']);
+
     Route::get('/projects/with/name', [ViewProjectController::class, "projectsWithName"]);
+});
+Route::prefix('v1')->middleware(["authorized:" . 'organization:api'])->group(function () {
+    Route::get('/projects-org', [ViewProjectController::class, 'orgIndex'])->middleware(["userHasMainPermission:" . PermissionEnum::projects->value . ',' . 'view']);
 });

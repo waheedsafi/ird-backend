@@ -98,6 +98,27 @@ class StatusController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
+    public function presentationStatus()
+    {
+        $locale = App::getLocale();
+
+        // Start building the query
+        $tr = DB::table('status_trans as st')
+            ->whereIn('st.status_id', [StatusEnum::has_comment->value, StatusEnum::approved->value])
+            ->where('st.language_name', $locale)
+            ->select(
+                "st.status_id as id",
+                "st.name as name",
+            )
+            ->get();
+
+        return response()->json(
+            $tr,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
+    }
     public function storeUser(Request $request)
     {
         // Validate request

@@ -585,5 +585,7 @@ return [
     "gap" => "Gap",
     "hide_doc" => "Hide Documents",
     "show_doc" => "Show Documents",
-    "no_availble_doc" => "No documents available."
+    "no_availble_doc" => "No documents available.",
+    "hid_pren_info" => "Hide presentation Info",
+    "sho_pren_info" => "Show presentation Info",
 ];
