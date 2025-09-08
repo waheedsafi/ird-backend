@@ -102,12 +102,12 @@
             <div class="article-title">
 
                 <h3>
-                    Article One</h3>
+                    مادۀ اول</h3>
 
             </div>
-            {!! '<tocentry content=" Preamble" level="3" />' !!}
+            {!! '<tocentry content="  مقدمه:" level="3" />' !!}
             <h4 class="content-title">
-                Preamble:</h4>
+                مقدمه: </h4>
             {{ $preamble }}
             </p>
             {{-- artical two --}}
@@ -116,13 +116,13 @@
             <div class="article-title">
 
                 <h3>
-                    Article Two</h3>
+                    مادۀ دوم</h3>
 
             </div>
-            {!! '<tocentry content=" Parties" level="3" />' !!}
+            {!! '<tocentry content="   طرفین:" level="3" />' !!}
             <h4>
-                Parties: </h4>
-            => Ministry of Public Health (MoPH)
+                طرفین: </h4>
+            => وزارت صحت عامه امارت اسلامی افغانستان
             <br>
             => {{ $ngo_name }}
             <br>
@@ -134,12 +134,12 @@
             <div class="article-title">
 
                 <h3>
-                    Article Three</h3>
+                    مادۀ سوم</h3>
 
             </div>
-            {!! '<tocentry content="  Introduction of the Organization" level="3" />' !!}
+            {!! '<tocentry content="  معرفی موسسه:" level="3" />' !!}
             <h4>
-                Introduction of the Organization:</h4>
+                معرفی موسسه: </h4>
 
             {{ $introduction_ngo }}
             <br>
@@ -151,12 +151,12 @@
             <div class="article-title">
 
                 <h3>
-                    Article Four</h3>
+                    مادۀ چهارم</h3>
 
             </div>
-            {!! '<tocentry content=" Abbreviations/definition of key terms " level="3" />' !!}
+            {!! '<tocentry content="  تعریف اصطلاحات/مخففات: " level="3" />' !!}
             <h4>
-                Abbreviations/definition of key terms: </h4>
+                تعریف اصطلاحات/مخففات: </h4>
 
             {{ $abbr }}
             <br>
@@ -167,12 +167,12 @@
             <div class="article-title">
 
                 <h3>
-                    Article Five</h3>
+                    مادۀ پنجم</h3>
 
             </div>
-            {!! '<tocentry content="  Organization`s Vision " level="3" />' !!}
+            {!! '<tocentry content="دیدگاه موسسه:" level="3" />' !!}
             <h4>
-                Organization`s Vision: </h4>
+                دیدگاه موسسه:</h4>
 
             {{ $org_vision }}
             <br>
@@ -183,12 +183,12 @@
             <div class="article-title">
 
                 <h3>
-                    Article SiX</h3>
+                    مادۀ ششم</h3>
 
             </div>
-            {!! '<tocentry content=" Organization`s Mission" level="3" />' !!}
+            {!! '<tocentry content="مأموریت موسسه:" level="3" />' !!}
             <h4>
-                Organization`s Mission: </h4>
+                مأموریت موسسه: </h4>
 
             {{ $org_mission }}
             <br>
@@ -200,19 +200,19 @@
             <div class="article-title">
 
                 <h3>
-                    Article Seven</h3>
+                    مادۀ هفتم</h3>
 
             </div>
-            {!! '<tocentry content="Organization`s Senior Management Team and Working Areas" level="3" />' !!}
+            {!! '<tocentry content="ساختار اداری وساحات کاری موسسه:" level="3" />' !!}
             <h4>
-                Organization`s Senior Management Team and Working Areas: </h4>
+                ساختار اداری وساحات کاری موسسه: </h4>
 
             {{ $org_management_working_area }}
 
             <br>
-            {!! '<tocentry content="Structure of the project" level="3" />' !!}
+            {!! '<tocentry content=" جدول ساختار اداری : " level="3" />' !!}
             <h5>
-                Structure of the project:</h5>
+                جدول ساختار اداری : </h5>
             {{ $project_structure }}
             </p>
 
@@ -222,17 +222,17 @@
             <div class="article-title">
 
                 <h3>
-                    Article Eight</h3>
+                    مادۀ هشتم</h3>
 
             </div>
-            {!! '<tocentry content="Background/Experience of Working in Health Sector" level="3" />' !!}
+            {!! '<tocentry content=" سابقه فعالیت های موسسه در بخش های مربوطه:" level="3" />' !!}
             <h4>
-                Background/Experience of Working in Health Sector: </h4>
+                سابقه فعالیت های موسسه در بخش های مربوطه: </h4>
 
             {{ $backgroud_experince }}
 
             <br>
-            {!! '<tocentry content="Provision of Health Services" level="3" />' !!}
+            {{-- {!! '<tocentry content="Provision of Health Services" level="3" />' !!} --}}
             {{-- <h5>
                 Provision of Health Services:</h5><br>
             </p>
@@ -243,12 +243,12 @@
             <div class="article-title">
 
                 <h3>
-                    Article Nine</h3>
+                    مادۀ نهم</h3>
 
             </div>
-            {!! '<tocentry content="Introduction of the Current Project" level="3" />' !!}
+            {!! '<tocentry content="معرفی پروژه فعلی " level="3" />' !!}
             <h4>
-                Introduction of the Current Project: </h4>
+                معرفی پروژه فعلی </h4>
 
             {{ $introduction_current_project }}
             <br>

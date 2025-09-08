@@ -1,8 +1,8 @@
 <table width="90%" style="border-collapse: collapse; margin: 20px auto; font-size: 14px;">
     <thead>
         <tr style="background-color: #f2f2f2;">
-            <th style="border: 1px solid black; padding: 8px;">Province</th>
-            <th style="border: 1px solid black; padding: 8px;">Health Facilities</th>
+            <th style="border: 1px solid black; padding: 8px;">ولایات</th>
+            <th style="border: 1px solid black; padding: 8px;">مراکز صحی</th>
         </tr>
     </thead>
     <tbody>
