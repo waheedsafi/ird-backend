@@ -43,9 +43,16 @@ class RoleController extends Controller
         $tr = [];
         $locale = App::getLocale();
 
+        $exclude = [
+            RoleEnum::debugger->value,
+            RoleEnum::super->value,
+            RoleEnum::donor->value,
+            RoleEnum::organization->value,
+        ];
+
         if ($authUser->role_id === RoleEnum::super->value) {
             $tr = DB::table('role_trans as rt')
-                ->whereNotIn('rt.role_id', [RoleEnum::debugger->value, RoleEnum::super->value])
+                ->whereNotIn('rt.role_id', $exclude)
                 ->where('rt.language_name', $locale)
                 ->select('rt.role_id as id', "rt.value as name", 'rt.created_at')->get();
         } else {
@@ -57,7 +64,7 @@ class RoleController extends Controller
                     $join->on('rt.role_id', '=', 'rai.assignee_role_id')
                         ->where('rt.language_name', $locale);
                 })
-                ->whereNotIn('rt.role_id', [RoleEnum::debugger->value, RoleEnum::super->value])
+                ->whereNotIn('rt.role_id', $exclude)
 
                 ->select('rt.role_id as id', "rt.value as name")
                 ->get();
