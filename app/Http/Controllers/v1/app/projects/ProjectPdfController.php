@@ -122,6 +122,11 @@ class ProjectPdfController extends Controller
             $zip->close();
         }
 
+
+
+
+        // 
+
         // Cleanup temporary PDFs
         foreach ($pdfFiles as $file) {
             unlink($file);
