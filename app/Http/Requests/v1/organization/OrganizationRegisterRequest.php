@@ -26,13 +26,14 @@ class OrganizationRegisterRequest extends FormRequest
             'contact' => 'required|unique:contacts,value',
             'province_id' => 'required|integer|exists:provinces,id',
             'district_id' => 'required|integer|exists:districts,id',
+
+
             'password' => [
                 'required',
-                'regex:#^[A-Za-z0-9!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\\/]+$#',
                 'min:8',
                 'max:50',
+                'regex:#^[A-Za-z0-9!@#$%^&*(),.?":{}|<>\_\-\+=\[\]\\\\/]+$#',
             ],
-
             'abbr' => [
                 'required',
                 'alpha', // only letters
