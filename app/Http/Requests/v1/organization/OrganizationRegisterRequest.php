@@ -30,9 +30,11 @@ class OrganizationRegisterRequest extends FormRequest
 
             'password' => [
                 'required',
+                'string',
                 'min:8',
                 'max:50',
-                'regex:#^[A-Za-z0-9!@#$%^&*(),.?":{}|<>\_\-\+=\[\]\\\\/]+$#',
+                // letters, numbers, symbols
+
             ],
             'abbr' => [
                 'required',
@@ -41,7 +43,7 @@ class OrganizationRegisterRequest extends FormRequest
                 'unique:organizations,abbr',
             ],
 
-            'aea_english' => 'required|string|max:200',
+            'area_english' => 'required|string|max:200',
             'area_farsi' => 'required|string|max:200',
             'area_pashto' => 'required|string|max:200',
 
