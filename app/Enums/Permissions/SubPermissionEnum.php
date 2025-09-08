@@ -110,10 +110,10 @@ enum SubPermissionEnum: int
             + self::CONFIGURATIONS
             + self::APPROVALS
             + self::ACTIVITY
-            + self::ABOUT;
-        +self::ORGANIZATIONS;
-        +self::PROJECT;
-        +self::DONOR;
+            + self::ABOUT
+            + self::ORGANIZATIONS
+            + self::PROJECT
+            + self::DONOR;
 
         return $all[$id] ?? null;
     }

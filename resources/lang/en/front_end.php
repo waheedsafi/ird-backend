@@ -578,5 +578,6 @@ return [
     "presentation_af_lu" => "Presentations After Lunch",
     "no_pre_bf_lu" => "Number of presentations scheduled before lunch break.",
     "no_pre_af_lu" => "Number of presentations scheduled after lunch break.",
-    "use_24" => "Use 24-hour time format"
+    "use_24" => "Use 24-hour time format",
+    "unassigned" => "Unassigned"
 ];

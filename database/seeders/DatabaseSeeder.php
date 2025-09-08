@@ -73,6 +73,7 @@ class DatabaseSeeder extends Seeder
         $this->call(NotifierSeeder::class);
         $this->call(ApplicationSeeder::class);
         $this->call(CommentSeeder::class);
+        $this->call(ScheduleSeeder::class);
 
         // App
         $this->currency();

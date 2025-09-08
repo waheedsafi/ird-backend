@@ -136,6 +136,7 @@ class ScheduleController extends Controller
                 'schedule_id' => $schedule->id,
                 'start_time' => $item['slot']['presentation_start'],
                 'end_time' => $item['slot']['presentation_end'],
+                'status_id' => StatusEnum::pending->value,
             ]);
 
             // 2. Add schedule item document
@@ -446,143 +447,97 @@ class ScheduleController extends Controller
 
         return response()->json(['message' => __('app_translation.success')], 200);
     }
+    public function present($id)
+    {
+        $locale = App::getLocale();
 
+        // Fetch the schedule
+        $schedule = DB::table('schedules as s')
+            ->where('s.id', $id)
+            ->join('schedule_status_trans as sst', function ($join) use ($locale) {
+                $join->on('sst.schedule_status_id', '=', 's.schedule_status_id')
+                    ->where('sst.language_name', $locale);
+            })
+            ->select(
+                's.date',
+                's.start_time',
+                's.end_time',
+                's.gap_between',
+                's.lunch_start',
+                's.lunch_end',
+                'sst.value as schedule_status',
+                's.schedule_status_id'
+            )
+            ->first();
 
-    // public function update(ScheduleRequest $request)
-    // {
-    //     DB::beginTransaction();
-    //     $authUser = $request->user();
+        if (!$schedule) {
+            return response()->json(['message' => __('app_translation.not_found')], 404);
+        }
 
-    //     $id = $request['id'];
+        // Fetch schedule items with project names
+        $rawData = DB::table('schedule_items as si')
+            ->where('si.schedule_id', $id)
+            ->join('status_trans as st', function ($join) use ($locale) {
+                $join->on('st.status_id', '=', 'si.status_id')
+                    ->where('st.language_name', $locale);
+            })
+            ->join('project_trans as pt', function ($join) use ($locale) {
+                $join->on('pt.project_id', '=', 'si.project_id')
+                    ->where('pt.language_name', $locale);
+            })
+            ->leftJoin('project_documents as pd', 'pd.project_id', '=', 'si.project_id')
+            ->leftJoin('documents as d', 'd.id', '=', 'pd.document_id')
+            ->leftJoin('check_list_trans as clt', function ($join) use ($locale) {
+                $join->on('clt.check_list_id', '=', 'd.check_list_id')
+                    ->where('clt.language_name', $locale);
+            })
+            ->select(
+                'si.id as schedule_item_id',
+                'si.start_time',
+                'si.end_time',
+                'pt.project_id',
+                'pt.name as project_name',
+                'si.status_id',
+                'st.name as status',
+                'd.actual_name',
+                'd.size',
+                'd.path',
+                'd.type',
+                'clt.value as checklist'
+            )
+            ->get();
 
-    //     // Find schedule manually
-    //     $schedule = DB::table('schedules')->where('id', $id)->first();
-    //     if (!$schedule) {
-    //         return response()->json(['message' => __('app_translation.schedule_not_found')], 404);
-    //     }
+        $scheduleItems = [];
 
-    //     // Update schedule manually
-    //     DB::table('schedules')->where('id', $id)->update([
-    //         'date' => Carbon::parse($request['date'])->toDateString() ?? now()->toDateString(),
-    //         'start_time' => $request['start_time'] ?? '08:00',
-    //         'end_time' => $request['end_time'],
-    //         'representators_count' => $request['presentation_count'],
-    //         'presentation_lenght' => $request['presentation_length'],
-    //         'gap_between' => $request['gap_between'],
-    //         'lunch_start' => $request['lunch_start'],
-    //         'lunch_end' => $request['lunch_end'],
-    //         'dinner_start' => $request['dinner_start'],
-    //         'dinner_end' => $request['dinner_end'],
-    //         'presentation_before_lunch' => $request['presentations_before_lunch'],
-    //         'presentation_after_lunch' => $request['presentations_after_lunch'],
-    //         'is_hour_24' => $request['is_hour_24'] ?? false,
-    //     ]);
+        foreach ($rawData as $row) {
+            $id = $row->schedule_item_id;
 
-    //     // Get old schedule items manually
-    //     $existingScheduleItems = DB::table('schedule_items')->where('schedule_id', $id)->get();
-    //     $existingItemIds = $existingScheduleItems->pluck('id')->toArray();
-    //     $oldProjectIds = $existingScheduleItems->pluck('project_id')->toArray();
+            if (!isset($scheduleItems[$id])) {
+                // Initialize schedule item entry
+                $scheduleItems[$id] = [
+                    'start_time' => $row->start_time,
+                    'end_time' => $row->end_time,
+                    'project_id' => $row->project_id,
+                    'project_name' => $row->project_name,
+                    'status_id' => $row->status_id,
+                    'status' => $row->status,
+                    'documents' => [],
+                ];
+            }
 
-    //     $newProjectIds = [];
-    //     $receivedItemIds = [];
+            // Only add document if it exists (handle leftJoin nulls)
+            if ($row->actual_name !== null) {
+                $scheduleItems[$id]['documents'][] = [
+                    'name' => $row->actual_name,
+                    'size' => $row->size,
+                    'path' => $row->path,
+                    'type' => $row->type,
+                    'checklist' => $row->checklist,
+                ];
+            }
+        }
+        $schedule->schedule_items = array_values($scheduleItems);
 
-    //     foreach ($request['scheduleItems'] as $item) {
-    //         $newProjectIds[] = $item['projectId'];
-
-    //         // Update or insert item
-    //         if (!empty($item['slot']['id']) && in_array($item['slot']['id'], $existingItemIds)) {
-    //             DB::table('schedule_items')->where('id', $item['slot']['id'])->update([
-    //                 'project_id' => $item['projectId'],
-    //                 'start_time' => $item['slot']['presentation_start'],
-    //                 'end_time' => $item['slot']['presentation_end'],
-    //             ]);
-    //             $scheduleItemId = $item['slot']['id'];
-    //         } else {
-    //             $scheduleItemId = DB::table('schedule_items')->insertGetId([
-    //                 'project_id' => $item['projectId'],
-    //                 'schedule_id' => $id,
-    //                 'start_time' => $item['slot']['presentation_start'],
-    //                 'end_time' => $item['slot']['presentation_end'],
-    //             ]);
-    //         }
-
-    //         $receivedItemIds[] = $scheduleItemId;
-
-    //         // Handle attachments
-    //         if (!empty($item['attachment'])) {
-    //             $attachment = $item['attachment'];
-    //             $pendingId = $attachment['pending_id'] ?? null;
-
-    //             $existingScheduleDoc = DB::table('schedule_documents')->where('schedule_item_id', $scheduleItemId)->first();
-
-    //             if ($pendingId) {
-    //                 $this->storageRepository->scheduleDocumentStore($id, $pendingId, function ($docData) use ($scheduleItemId, $existingScheduleDoc) {
-    //                     $documentId = DB::table('documents')->insertGetId([
-    //                         'actual_name' => $docData['actual_name'],
-    //                         'size' => $docData['size'],
-    //                         'path' => $docData['path'],
-    //                         'type' => $docData['type'],
-    //                         'check_list_id' => $docData['check_list_id'],
-    //                     ]);
-
-    //                     if ($existingScheduleDoc) {
-    //                         DB::table('schedule_documents')->where('schedule_item_id', $scheduleItemId)->update([
-    //                             'document_id' => $documentId
-    //                         ]);
-    //                     } else {
-    //                         DB::table('schedule_documents')->insert([
-    //                             'document_id' => $documentId,
-    //                             'schedule_item_id' => $scheduleItemId,
-    //                         ]);
-    //                     }
-    //                 });
-
-    //                 $this->pendingTaskRepository->destroyPendingTaskById($pendingId);
-    //             }
-    //         }
-
-    //         // Update project status
-    //         DB::table('project_statuses')->where('project_id', $item['projectId'])->update(['is_active' => false]);
-
-    //         DB::table('project_statuses')->insert([
-    //             'is_active' => true,
-    //             'project_id' => $item['projectId'],
-    //             'status_id' => StatusEnum::scheduled->value,
-    //             'comment' => 'Schedule updated for the presentation',
-    //             'userable_type' => $this->getModelName(get_class($authUser)),
-    //             'userable_id' => $authUser->id,
-    //             'created_at' => now(),
-    //             'updated_at' => now(),
-    //         ]);
-    //     }
-
-    //     // Delete removed schedule items
-    //     $itemsToDelete = array_diff($existingItemIds, $receivedItemIds);
-    //     if (!empty($itemsToDelete)) {
-    //         DB::table('schedule_items')->whereIn('id', $itemsToDelete)->delete();
-    //         // You can also delete associated documents here if needed
-    //     }
-
-    //     // Restore status of removed projects
-    //     $removedProjectIds = array_diff($oldProjectIds, $newProjectIds);
-
-    //     foreach ($removedProjectIds as $removedProjectId) {
-    //         DB::table('project_statuses')->where('project_id', $removedProjectId)->update(['is_active' => false]);
-
-    //         DB::table('project_statuses')->insert([
-    //             'is_active' => true,
-    //             'project_id' => $removedProjectId,
-    //             'status_id' => StatusEnum::pending_for_schedule->value,
-    //             'comment' => 'Project removed from schedule',
-    //             'userable_type' => $this->getModelName(get_class($authUser)),
-    //             'userable_id' => $authUser->id,
-    //             'created_at' => now(),
-    //             'updated_at' => now(),
-    //         ]);
-    //     }
-
-    //     DB::commit();
-
-    //     return response()->json(['message' => __('app_translation.success')], 200);
-    // }
+        return response()->json($schedule);
+    }
 }
