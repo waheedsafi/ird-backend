@@ -33,7 +33,7 @@ class DonorRegisterRequest extends FormRequest
             'username' => 'required|string|max:255|unique:donors,username',
             "password" => [
                 'required',
-                'regex:/^[A-Za-z0-9!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/]+$/',
+                'string',
                 'max:50',
                 'min:8'
             ],
