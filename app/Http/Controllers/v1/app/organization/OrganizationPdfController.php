@@ -98,6 +98,11 @@ class OrganizationPdfController extends Controller
             unlink($file);
         }
 
+        return response()->file($zipFile,  [
+            'Content-Type' => 'application/zip',
+            'Content-Disposition' => 'attachment; filename="mou_documents.zip"',
+            'Content-Length' => filesize($zipFile),
+        ]);
         return response()->download($zipFile, 'mou_documents.zip', [
             'Content-Type' => 'application/zip',
             'Content-Disposition' => 'attachment; filename="mou_documents.zip"',
