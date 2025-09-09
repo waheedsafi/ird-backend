@@ -7,6 +7,7 @@ use App\Models\CheckListType;
 use App\Models\CheckListTrans;
 use Illuminate\Database\Seeder;
 use App\Models\CheckListTypeTrans;
+use Illuminate\Support\Facades\DB;
 use App\Enums\Permissions\RoleEnum;
 use App\Enums\Languages\LanguageEnum;
 use App\Enums\Checklist\ChecklistEnum;
@@ -23,6 +24,8 @@ class CheckListSeeder extends Seeder
         $this->organizationRegisterationCheckList();
         $this->projectCheckList();
         $this->scheduleCheckList();
+
+        DB::statement("SELECT setval('check_lists_id_seq', (SELECT MAX(id) FROM check_lists))");
     }
 
     protected function CheckListType()

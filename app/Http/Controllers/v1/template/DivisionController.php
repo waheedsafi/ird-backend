@@ -51,9 +51,9 @@ class DivisionController extends Controller
         return response()->json(
             [
                 "id" => $division->division_id,
-                "english" => $division->english,
-                "farsi" => $division->farsi,
-                "pashto" => $division->pashto,
+                "name_english" => $division->english,
+                "name_farsi" => $division->farsi,
+                "name_pashto" => $division->pashto,
             ],
             200,
             [],

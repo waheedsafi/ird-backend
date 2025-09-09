@@ -28,13 +28,18 @@ class CheckListController extends Controller
     {
         $locale = App::getLocale();
 
-        $tr =  Cache::remember($this->cacheChecklist, 1800, function () use ($locale) {
+        $tr =  Cache::remember($this->cacheChecklist . '_' . $locale, 10, function () use ($locale) {
 
             return  DB::table('check_lists as cl')
                 ->join('users as u', 'u.id', '=', 'cl.user_id')
+                ->whereIn('cl.check_list_type_id', [
+                    CheckListTypeEnum::organization_registeration->value,
+                    CheckListTypeEnum::project_registeration->value
+                ])
                 ->join('check_list_trans as clt', 'clt.check_list_id', '=', 'cl.id')
                 ->where('clt.language_name', $locale)
                 ->join('check_list_types as cltt', 'cltt.id', '=', 'cl.check_list_type_id')
+
                 ->join('check_list_type_trans as clttt', 'clttt.check_list_type_id', '=', 'cltt.id')
                 ->where('clttt.language_name', $locale)
                 ->select(
@@ -107,7 +112,7 @@ class CheckListController extends Controller
             "saved_by" => $authUser->username,
             "created_at" => $checklist->created_at,
         ];
-        Cache::forget($this->cacheChecklist);
+        Cache::forget($this->cacheChecklist . '_' . $locale);
         return response()->json(
             [
                 "checklist" => $tr,
@@ -175,9 +180,9 @@ class CheckListController extends Controller
         }
 
         DB::commit();
-        Cache::forget($this->cacheChecklist);
-
         $locale = App::getLocale();
+        Cache::forget($this->cacheChecklist . '_' . $locale);
+
         $name = $request->name_english;
         if ($locale == LanguageEnum::farsi->value) {
             $name = $request->name_farsi;
@@ -217,6 +222,10 @@ class CheckListController extends Controller
     {
         $locale = App::getLocale();
         $tr =  DB::table('check_list_types as clt')
+            ->whereIn('clt.id', [
+                CheckListTypeEnum::organization_registeration->value,
+                CheckListTypeEnum::project_registeration->value
+            ])
             ->join('check_list_type_trans as cltt', 'cltt.check_list_type_id', '=', 'clt.id')
             ->where('cltt.language_name', $locale)
             ->select(
