@@ -10,31 +10,32 @@ trait PdfGeneratorTrait
 {
     public function generatePdf()
     {
-        $configVariables = new ConfigVariables();
+        $configVariables = new \Mpdf\Config\ConfigVariables();
         $fontDirs = $configVariables->getDefaults()['fontDir'];
-        $fontVariables = new FontVariables();
+        $fontVariables = new \Mpdf\Config\FontVariables();
         $fontData = $fontVariables->getDefaults()['fontdata'];
 
-
-        $mpdf = new Mpdf([
-            'fontDir' => array_merge($fontDirs, [public_path('fonts/amiri')]),
+        $mpdf = new \Mpdf\Mpdf([
+            'fontDir' => array_merge($fontDirs, [public_path('fonts/amiri'), storage_path('fonts')]),
             'fontdata' => $fontData + [
                 'amiri' => [
-                    'R' => 'Amiri-Regular.ttf',
-                    'B' => 'Amiri-Bold.ttf',
-                    'I' => 'Amiri-Italic.ttf',
-                    'BI' => 'Amiri-BoldItalic.ttf'
+                    'R'  => 'Amiri-Regular.ttf',
+                    'B'  => 'Amiri-Bold.ttf',
+                    'I'  => 'Amiri-Italic.ttf',
+                    'BI' => 'Amiri-BoldItalic.ttf',
                 ]
             ],
             'default_font' => 'amiri',
             'mode' => 'utf-8',
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
-            'margin_bottom' => 50,  // Increase bottom margin to make space for the footer
+            'margin_bottom' => 50,
+            'tempDir' => storage_path('fonts'),  // <--- This ensures font cache is written here
         ]);
 
         return $mpdf;
     }
+
     public function mergeExistingPdf(Mpdf $mpdf, $pdfPath, $footerHtml)
     {
         $pageCount = $mpdf->setSourceFile($pdfPath);
