@@ -54,7 +54,31 @@ class OrganizationPdfController extends Controller
     {
         $languages = ['en', 'ps', 'fa'];
         $pdfFiles = [];
+        $lang = 'en';
+        $mpdf = $this->generatePdf();
 
+        $this->setWatermark($mpdf);
+        $data = $this->loadOrganizationData($lang, $id);
+        // return "organization.registeration.{$lang}.registeration";
+        // Generate PDF content
+        $this->pdfFilePart($mpdf, "organization.registeration.{$lang}.registeration", $data);
+        // $this->pdfFilePart($mpdf, "organization.registeration.{$lang}.registeration", $data);
+        $mpdf->SetProtection(['print']);
+
+        // Store the PDF temporarily
+
+        $fileName = "{$data['ngo_name']}_registration_{$lang}.pdf";
+        $outputPath = storage_path("app/private/temp/");
+        if (!is_dir($outputPath)) {
+            mkdir($outputPath, 0755, true);
+        }
+        $filePath = $outputPath . $fileName;
+
+        // return $filePath;
+        $mpdf->Output($filePath, 'F'); // Save to file
+
+        return response()->download($filePath)->deleteFileAfterSend(true);
+        $pdfFiles[] = $filePath;
 
         foreach ($languages as $lang) {
             $mpdf = $this->generatePdf();
