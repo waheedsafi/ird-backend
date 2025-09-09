@@ -138,7 +138,8 @@ class OrganizationPdfController extends Controller
                 }
 
                 // Return ZIP as download
-                return response()->download($zipFile)->deleteFileAfterSend(true);
+                return response()->download($zipFile);
+                // return response()->download($zipFile)->deleteFileAfterSend(true);
             } else {
                 Log::error("Failed to create ZIP file");
                 return response()->json(['error' => 'Failed to create ZIP file'], 500);
