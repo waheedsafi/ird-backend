@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\v1\organization;
 
+use App\Models\Organization;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class OrganizationInitStoreRequest extends FormRequest
 {
@@ -59,8 +61,14 @@ class OrganizationInitStoreRequest extends FormRequest
             ],
             "type.id" => "required|exists:organization_types,id",
             "contact" => "required",
-            'email' => 'required|email:rfc,filter|unique:emails,value',
-
+            'email' => [
+                'required',
+                'email:rfc,filter',
+                Rule::unique('emails', 'value')->ignore(
+                    Organization::find($this->id)?->email_id, // the email record id
+                    'id' // primary key in emails table
+                )
+            ],
             "country.id" => "required|exists:countries,id",
             "establishment_date" => "required",
             "province.id" => "required|exists:provinces,id",

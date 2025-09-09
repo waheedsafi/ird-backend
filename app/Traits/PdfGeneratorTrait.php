@@ -47,9 +47,9 @@ trait PdfGeneratorTrait
         }
     }
 
-    public function setWatermark($mpdf, $path = 'app/public/images/emart.png')
+    public function setWatermark($mpdf, $path = 'app/public/images/moph.png')
     {
-        $watermarkImagePath = storage_path('app/public/images/emart.png');
+        $watermarkImagePath = storage_path($path);
         $mpdf->SetWatermarkImage($watermarkImagePath, 0.2); // Set watermark and opacity
         $mpdf->showWatermarkImage = true; // Enable watermark
 
