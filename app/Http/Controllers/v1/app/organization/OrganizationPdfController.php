@@ -78,7 +78,7 @@ class OrganizationPdfController extends Controller
 
         // Check if PDF was created successfully
         if (file_exists($filePath)) {
-            return response()->download($filePath)->deleteFileAfterSend(true);
+            return response()->file($filePath)->deleteFileAfterSend(true);
         } else {
             Log::error("PDF generation failed for language: {$lang}");
         }
