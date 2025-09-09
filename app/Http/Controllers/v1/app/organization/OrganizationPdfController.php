@@ -64,6 +64,8 @@ class OrganizationPdfController extends Controller
         if (!is_dir($tempPath)) {
             mkdir($tempPath, 0755, true);
         }
+        Log::error("Missing file, cannot add to passs  ");
+
         // $lang = $request->input('lang');
 
         // $mpdf = $this->generatePdf();
@@ -88,6 +90,8 @@ class OrganizationPdfController extends Controller
 
         foreach ($languages as $lang) {
             try {
+                Log::error("Missing file, cannot add to pdf:  " . $lang);
+
                 // Generate PDF
                 Log::info($lang);
 
@@ -95,8 +99,6 @@ class OrganizationPdfController extends Controller
                 $this->setWatermark($mpdf);
                 $data = $this->loadOrganizationData($lang, $id);
 
-                Log::info($data);
-                Log::info($lang);
                 // Generate PDF content
                 $this->pdfFilePart($mpdf, "organization.registeration.{$lang}.registeration", $data);
                 $mpdf->SetProtection(['print']);
@@ -116,11 +118,14 @@ class OrganizationPdfController extends Controller
                 Log::error("Error generating PDF for {$lang}: " . $e->getMessage());
             }
         }
+        Log::error("Missing file, cannot add to generate all pdf: open ");
+
 
         // Create ZIP file if at least one PDF exists
         if (!empty($pdfFiles)) {
             $zipFile = storage_path('app/private/documents.zip');
             $zip = new ZipArchive();
+            Log::error("Missing file, cannot add to ZIP: openx ");
 
             if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
                 foreach ($pdfFiles as $file) {
@@ -131,11 +136,14 @@ class OrganizationPdfController extends Controller
                     }
                 }
                 $zip->close();
+                Log::error("Missing file, cannot add to ZIP : ");
 
                 // Delete individual PDFs after zipping
                 foreach ($pdfFiles as $file) {
                     @unlink($file);
                 }
+
+                Log::error("Missing file, cannot add to ZIP: download ");
 
                 // Return ZIP as download
                 return response()->download($zipFile);
