@@ -9,7 +9,7 @@ use App\Http\Controllers\v1\app\organization\EditesOrganizationController;
 use App\Http\Controllers\v1\app\organization\ExtendOrganizationController;
 use App\Http\Controllers\v1\app\organization\StoresOrganizationController;
 use App\Http\Controllers\v1\app\organization\DeletesOrganizationController;
-
+use App\Http\Controllers\v1\app\organization\PublicViewsOrganizationController;
 
 Route::prefix('v1')->middleware(["multiAuthorized:" . 'user:api,organization:api'])->group(function () {
   Route::get('/organization/start/extend/form/{id}', [ViewsOrganizationController::class, 'startExtendForm']);
@@ -50,4 +50,10 @@ Route::prefix('v1')->middleware(["authorized:" . 'organization:api'])->group(fun
 
 Route::prefix('v1')->group(function () {
   Route::get('organizations/public', [ViewsOrganizationController::class, 'publicOrganizations']);
+});
+
+Route::prefix('v1')->group(function () {
+
+  Route::get('/organizations/latest', [PublicViewsOrganizationController::class, 'latestOrganizations']);
+  Route::get('/organizations/topprojects', [PublicViewsOrganizationController::class, 'topOrganizationsByProjects']);
 });
