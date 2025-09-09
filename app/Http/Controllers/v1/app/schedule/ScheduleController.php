@@ -116,6 +116,7 @@ class ScheduleController extends Controller
     public function submitSchedule(PresentScheduleRequest $request)
     {
         $request->validated();
+        $authUser = $request->user();
         $schedule = Schedule::find($request->id);
         if (!$schedule) {
             return response()->json(['message' => __('app_translation.schedule_not_found')], 404);
@@ -140,13 +141,44 @@ class ScheduleController extends Controller
             // Handle error - some items are missing or extra items submitted
             return response()->json(['message' => __('app_translation.sched_item_tampered')], 400);
         }
+        $locale = App::getLocale();
+        $statusTrans = DB::table('status_trans as st')
+            ->whereIn('st.status_id', [
+                StatusEnum::has_comment->value,
+                StatusEnum::approved->value,
+                StatusEnum::missed->value
+            ])
+            ->where('st.language_name', $locale)
+            ->select(
+                "st.status_id as id",
+                "st.name as name",
+            )
+            ->get();
 
         $scheduleItemsFromFrontend = $request->input('schedule_items');
         foreach ($scheduleItemsFromFrontend as $item) {
             DB::table('schedule_items')
                 ->where('schedule_id', $schedule->id)
                 ->where('id', $item['id'])
-                ->update(['status_id' => $item['status']['id']]);
+                ->update([
+                    'status_id' => $item['status']['id'],
+                    'comment'   => $item['comment'] ?? null,
+                ]);
+            $name = $statusTrans->firstWhere('id', $item['status']['id'])?->name;
+            ProjectStatus::where('project_id', $item['project_id'])->update(['is_active' => false]);
+            ProjectStatus::create([
+                'is_active' => true,
+                'project_id' => $item['project_id'],
+                'status_id' => $item['status']['id'],
+                'comment' => $item['comment'] ?? '',
+                'userable_type' => $this->getModelName(get_class($authUser)),
+                'userable_id' => $authUser->id,
+            ]);
+            $message = [
+                'en' => Lang::get('app_translation.org_doc_rejected', [], 'en'),
+                'fa' => Lang::get('app_translation.org_doc_rejected', [], 'fa'),
+                'ps' => Lang::get('app_translation.org_doc_rejected', [], 'ps'),
+            ];
         }
         DB::commit();
         return response()->json(['message' => __('app_translation.success')], 200);
@@ -622,6 +654,7 @@ class ScheduleController extends Controller
                 'si.id as schedule_item_id',
                 'si.start_time',
                 'si.end_time',
+                'si.comment',
                 'pt.project_id',
                 'pt.name as project_name',
                 'si.status_id',
@@ -643,6 +676,7 @@ class ScheduleController extends Controller
                 // Initialize schedule item entry
                 $scheduleItems[$id] = [
                     'id' => $row->schedule_item_id,
+                    'comment' => $row->comment,
                     'start_time' => $row->start_time,
                     'end_time' => $row->end_time,
                     'project_id' => $row->project_id,
