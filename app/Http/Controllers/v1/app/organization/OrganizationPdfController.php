@@ -53,7 +53,8 @@ class OrganizationPdfController extends Controller
 
     public function generateForm(Request $request)
     {
-        $languages = ['en', 'ps', 'fa'];
+        $languages = ['en'];
+        // $languages = ['en', 'ps', 'fa'];
         $pdfFiles = [];
         $id = $request->id;
         Log::info($id);
