@@ -23,7 +23,7 @@ return new class extends Migration
                 ->onDelete('no action');
             $table->time('start_time');
             $table->time('end_time');
-            $table->text('comment');
+            $table->text('comment')->nullable();
             $table->unsignedBigInteger('status_id');
             $table->foreign('status_id')->references('id')->on('statuses')
                 ->onUpdate('cascade')
