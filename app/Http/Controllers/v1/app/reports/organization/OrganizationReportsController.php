@@ -91,25 +91,50 @@ class OrganizationReportsController extends Controller
                         'start_date' => '2023-01-01',
                         'end_date' => '2023-12-31',
                         'provinces' => [
-                            'name',
-                            'kabul'
+                            'name' =>  'kabul',
+                            'direct_beneficiaries' => 500,
+                            'indirect_beneficiaries' => 2000
 
                         ],
 
-                        'province' => 'Kabul',
-                        'direct_beneficiaries' => 500,
-                        'indirect_beneficiaries' => 2000
+
                     ],
                 ],
                 [
-                    'organization_name' => 'Mohammad',
-                    'father' => 'Yasin',
-                    'last_name' => 'Ahmadi'
+                    'organization_name' => 'Ahmad',
+                    'related_country' => 'Afghanistan',
+                    'total_budget' => '$100,000',
+                    'project' => [
+                        'project_name' => 'Project 1',
+                        'start_date' => '2023-01-01',
+                        'end_date' => '2023-12-31',
+                        'provinces' => [
+                            'name' =>  'kabul',
+                            'direct_beneficiaries' => 500,
+                            'indirect_beneficiaries' => 2000
+
+                        ],
+
+
+                    ],
                 ],
                 [
-                    'organization_name' => 'Said',
-                    'father' => 'Gul',
-                    'last_name' => 'Azizi'
+                    'organization_name' => 'Ahmad',
+                    'related_country' => 'Afghanistan',
+                    'total_budget' => '$100,000',
+                    'project' => [
+                        'project_name' => 'Project 1',
+                        'start_date' => '2023-01-01',
+                        'end_date' => '2023-12-31',
+                        'provinces' => [
+                            'name' =>  'kabul',
+                            'direct_beneficiaries' => 500,
+                            'indirect_beneficiaries' => 2000
+
+                        ],
+
+
+                    ],
                 ],
             ],
         ];

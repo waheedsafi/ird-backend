@@ -98,6 +98,11 @@ class OrganizationPdfController extends Controller
             unlink($file);
         }
 
+        return response()->download($zipFile, 'mou_documents.zip', [
+            'Content-Type' => 'application/zip',
+            'Content-Disposition' => 'attachment; filename="mou_documents.zip"',
+            'Content-Length' => filesize($zipFile),
+        ]);
         return response()->download($zipFile)->deleteFileAfterSend(true);
     }
     protected function loadOrganizationData($locale = 'en', $id)
