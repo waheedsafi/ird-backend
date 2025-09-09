@@ -59,6 +59,7 @@ class OrganizationInfoUpdateRequest extends FormRequest
                 'required',
                 'alpha', // only letters
                 'max:50',
+                Rule::unique('organizations', 'abbr')->ignore($id),
             ],
             "establishment_date" => "required",
             "province.id" => "required|exists:provinces,id",

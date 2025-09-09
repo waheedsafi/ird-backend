@@ -51,7 +51,12 @@ class OrganizationInitStoreRequest extends FormRequest
             "name_english" => 'required|string|max:128|min:3',
             "name_farsi" =>  'required|string|max:128|min:3',
             "name_pashto" => 'required|string|max:128|min:3',
-            "abbr" => "required|string",
+            'abbr' => [
+                'required',
+                'alpha', // only letters
+                'max:50',
+                'unique:organizations,abbr',
+            ],
             "type.id" => "required|exists:organization_types,id",
             "contact" => "required",
             'email' => 'required|email:rfc,filter|unique:emails,value',
