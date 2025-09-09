@@ -21,4 +21,5 @@ enum StatusEnum: int
     case pending_for_schedule = 11;
     case has_comment = 12;
     case scheduled = 13;
+    case missed = 14;
 }

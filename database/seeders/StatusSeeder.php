@@ -291,5 +291,24 @@ class StatusSeeder extends Seeder
             'language_name' => 'ps',
             'name' => 'مهالویش شو'
         ]);
+        $statustype =  Status::create([
+            'id' => StatusEnum::missed,
+            'status_type_id' => StatusTypeEnum::schedule,
+        ]);
+        DB::table('status_trans')->insert([
+            'status_id' => $statustype->id,
+            'language_name' => 'en',
+            'name' => 'Missed'
+        ]);
+        DB::table('status_trans')->insert([
+            'status_id' => $statustype->id,
+            'language_name' => 'fa',
+            'name' => 'حاضر نشدن'
+        ]);
+        DB::table('status_trans')->insert([
+            'status_id' => $statustype->id,
+            'language_name' => 'ps',
+            'name' => 'نه حاضرېدل'
+        ]);
     }
 }
