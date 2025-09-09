@@ -57,7 +57,11 @@ class OrganizationInitStoreRequest extends FormRequest
                 'required',
                 'alpha', // only letters
                 'max:50',
-                'unique:organizations,abbr',
+                'min:2',
+                Rule::unique('organizations', 'abbr')->ignore(
+                    $this->id, // the organization record id
+                    'id' // primary key in organizations table
+                )
             ],
             "type.id" => "required|exists:organization_types,id",
             "contact" => "required",
