@@ -23,14 +23,20 @@ class DonorRegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|unique:emails,value',
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+
             'contact' => 'required',
             'abbr' => 'required|string|unique:donors,abbr',
             'name_english' => 'required|string|max:255',
             'name_pashto' => 'required|string|max:255',
             'name_farsi' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:donors,username',
-            'password' => 'required|string|min:8|max:25',
+            "password" => [
+                'required',
+                'regex:/^[A-Za-z0-9!@#$%^&*(),.?":{}|<>_\-+=\[\]\\\/]+$/',
+                'max:50',
+                'min:8'
+            ],
             'area_english' => 'string|max:255',
             'area_pashto' => 'string|max:255',
             'area_farsi' => 'string|max:255',

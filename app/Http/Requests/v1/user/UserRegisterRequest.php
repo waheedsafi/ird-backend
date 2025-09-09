@@ -24,8 +24,13 @@ class UserRegisterRequest extends FormRequest
         return [
             "full_name" => ['required', "string", "min:3", "max:45"],
             "username" => ['required', "string", "min:3", "max:45"],
-            "email" => ["required", "email"],
-            "password" => ["required", "string", "min:8", "max:25"],
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+            "password" => [
+                'required',
+                'string',
+                'max:50',
+                'min:8'
+            ],
             "role" => ["required"],
             "job" => ["required"],
             "job_id" => ["required"],

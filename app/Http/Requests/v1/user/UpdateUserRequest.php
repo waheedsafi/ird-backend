@@ -25,7 +25,7 @@ class UpdateUserRequest extends FormRequest
             "id" => ['required'],
             "full_name" => ['required', "string", "min:3", "max:45"],
             "username" => ['required', "string", "min:3", "max:45"],
-            "email" => ["required", "email"],
+            'email' => 'required|email:rfc,filter|unique:emails,value',
             "role" => ["required"],
             "job" => ["required"],
             "division" => ["required"],

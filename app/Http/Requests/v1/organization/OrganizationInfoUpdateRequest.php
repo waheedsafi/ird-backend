@@ -52,7 +52,12 @@ class OrganizationInfoUpdateRequest extends FormRequest
             'name_english' => 'required|string|max:100',
             'name_pashto' => 'required|string|max:100',
             'name_farsi' => 'required|string|max:100',
-            'abbr' => 'required|string|max:20',
+
+            'abbr' => [
+                'required',
+                'alpha', // only letters
+                'max:50',
+            ],
             "establishment_date" => "required",
             "province.id" => "required|exists:provinces,id",
             "district.id" => "required|exists:districts,id",
@@ -60,7 +65,8 @@ class OrganizationInfoUpdateRequest extends FormRequest
             "area_pashto" => "required|max:128|min:5",
             "area_farsi" => "required|max:128|min:5",
             "contact" => "required",
-            "email" => "required",
+            'email' => 'required|email:rfc,filter|unique:emails,value',
+
         ];
     }
 

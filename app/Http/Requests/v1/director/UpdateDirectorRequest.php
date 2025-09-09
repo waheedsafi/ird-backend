@@ -29,6 +29,8 @@ class UpdateDirectorRequest extends FormRequest
             'name_farsi' => 'required|string|max:128',
             'gender.id' => 'required|exists:genders,id',
             'nid' => 'required|string|max:50',
+            'email' => 'required|email:rfc,filter',
+
             'identity_type.id' => 'required|exists:nid_types,id',
             'nationality.id' => 'required|exists:countries,id',
             'province.id' => 'required|exists:provinces,id',

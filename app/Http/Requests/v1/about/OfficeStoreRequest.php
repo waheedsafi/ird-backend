@@ -22,7 +22,9 @@ class OfficeStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email|unique:office_information,email',
+
+
+            'email' => 'required|email:rfc,filter|unique:office_information,email',
             'contact' => 'required|unique:office_information,contact',
             'address_english' => 'required|string',
             'address_farsi' => 'required|string',
