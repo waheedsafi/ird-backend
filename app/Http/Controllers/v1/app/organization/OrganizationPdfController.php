@@ -51,15 +51,36 @@ class OrganizationPdfController extends Controller
 
 
 
-    public function generateForm(Request $request, $id)
+    public function generateForm(Request $request)
     {
         $languages = ['en', 'ps', 'fa'];
         $pdfFiles = [];
-
+        $id = $request->id;
         // Ensure temp folder exists
         $tempPath = storage_path("app/private/temp/");
         if (!is_dir($tempPath)) {
             mkdir($tempPath, 0755, true);
+        }
+        $lang = $request->input('lang');
+
+        $mpdf = $this->generatePdf();
+        $this->setWatermark($mpdf);
+        $data = $this->loadOrganizationData($lang, $id);
+        Log::info($lang);
+        // Generate PDF content
+        $this->pdfFilePart($mpdf, "organization.registeration.{$lang}.registeration", $data);
+        $mpdf->SetProtection(['print']);
+
+        // Save PDF to temp folder
+        $fileName = "{$data['ngo_name']}_registration_{$lang}.pdf";
+        $filePath = $tempPath . $fileName;
+        $mpdf->Output($filePath, 'F');
+
+        // Check if PDF was created successfully
+        if (file_exists($filePath)) {
+            return response()->download($filePath)->deleteFileAfterSend(true);
+        } else {
+            Log::error("PDF generation failed for language: {$lang}");
         }
 
         foreach ($languages as $lang) {
@@ -69,6 +90,8 @@ class OrganizationPdfController extends Controller
                 $this->setWatermark($mpdf);
                 $data = $this->loadOrganizationData($lang, $id);
 
+                Log::info($data);
+                Log::info($lang);
                 // Generate PDF content
                 $this->pdfFilePart($mpdf, "organization.registeration.{$lang}.registeration", $data);
                 $mpdf->SetProtection(['print']);
@@ -80,7 +103,7 @@ class OrganizationPdfController extends Controller
 
                 // Check if PDF was created successfully
                 if (file_exists($filePath)) {
-                    $pdfFiles[] = $filePath;
+                    // $pdfFiles[] = $filePath;
                 } else {
                     Log::error("PDF generation failed for language: {$lang}");
                 }
@@ -120,7 +143,7 @@ class OrganizationPdfController extends Controller
         }
     }
 
-    protected function loadOrganizationData($locale = 'en', $id)
+    protected function loadOrganizationData($locale, $id)
     {
 
         $organization = DB::table('organizations as n')
