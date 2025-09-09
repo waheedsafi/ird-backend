@@ -497,5 +497,21 @@ class TestingController extends Controller
             ]
         ]);
     }
-    public function testing(Request $request) {}
+    public function testing(Request $request)
+    {
+        return         $statusTrans = DB::table('status_trans as st')
+            ->whereIn('st.status_id', [
+                StatusEnum::has_comment->value,
+                StatusEnum::approved->value,
+                StatusEnum::missed->value
+            ])
+            ->select(
+                'st.status_id',
+                DB::raw("MAX(CASE WHEN st.language_name = 'fa' THEN st.name END) as farsi"),
+                DB::raw("MAX(CASE WHEN st.language_name = 'en' THEN st.name END) as english"),
+                DB::raw("MAX(CASE WHEN st.language_name = 'ps' THEN st.name END) as pashto")
+            )
+            ->groupBy('st.status_id')
+            ->get();
+    }
 }

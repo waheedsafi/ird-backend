@@ -10,4 +10,6 @@ enum NotifierEnum: int
     case signed_register_form_accepted = 4;
     case project_scheduled_for_presentation = 5;
     case project_recieved_comment = 6;
+    case project_presentation_canceled = 7;
+    case project_presentation_completed = 8;
 }
