@@ -84,5 +84,7 @@ return [
     'project_sent_for_approval' => 'پروژه :username برای تأیید فرستاده شده است.',
     'project_doc_approved' => 'پروژه :username تایید شده است.',
     'project_doc_rejected' => 'اسناد پروژه :username رد شده‌اند.',
+    'project_schedule_to_present' => ':username برای ارائه در تاریخ :date از ساعت :start_time تا :end_time برنامه‌ریزی شده است.',
+    "sched_item_tampered" => "موارد برنامه نامناسب یا دستکاری شده اند"
 
 ];

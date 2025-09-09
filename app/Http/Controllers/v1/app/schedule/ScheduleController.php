@@ -8,29 +8,36 @@ use App\Models\Schedule;
 use App\Models\ScheduleItem;
 use Illuminate\Http\Request;
 use App\Models\ProjectStatus;
+use App\Traits\UtilHelperTrait;
 use App\Models\ScheduleDocument;
+use App\Enums\Types\NotifierEnum;
 use App\Enums\Statuses\StatusEnum;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Lang;
 use App\Enums\Statuses\ScheduleStatusEnum;
 use App\Http\Requests\v1\schedule\ScheduleRequest;
 use App\Repositories\Storage\StorageRepositoryInterface;
+use App\Http\Requests\v1\schedule\PresentScheduleRequest;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
-use App\Traits\UtilHelperTrait;
+use App\Repositories\Notification\NotificationRepositoryInterface;
 
 class ScheduleController extends Controller
 {
     use UtilHelperTrait;
     protected $pendingTaskRepository;
     protected $storageRepository;
+    protected $notificationRepository;
 
     public function __construct(
         PendingTaskRepositoryInterface $pendingTaskRepository,
-        StorageRepositoryInterface $storageRepository
+        StorageRepositoryInterface $storageRepository,
+        NotificationRepositoryInterface $notificationRepository,
+
     ) {
         $this->pendingTaskRepository = $pendingTaskRepository;
-
+        $this->notificationRepository = $notificationRepository;
         $this->storageRepository = $storageRepository;
     }
 
@@ -106,7 +113,44 @@ class ScheduleController extends Controller
         return response()->json($projects);
     }
 
-    public function submitSchedule(Request $request) {}
+    public function submitSchedule(PresentScheduleRequest $request)
+    {
+        $request->validated();
+        $schedule = Schedule::find($request->id);
+        if (!$schedule) {
+            return response()->json(['message' => __('app_translation.schedule_not_found')], 404);
+        }
+        DB::beginTransaction();
+
+        $schedule->schedule_status_id = ScheduleStatusEnum::Completed->value;
+        $schedule->save();
+
+        $submittedItemIds = collect($request->input('schedule_items'))->pluck('id')->toArray();
+        // Get all schedule item IDs from DB for the schedule
+        $dbItemIds = DB::table('schedule_items')
+            ->where('schedule_id', $schedule->id)
+            ->pluck('id')
+            ->toArray();
+
+        // Check if submitted items match DB items exactly
+        $allItemsPresent = empty(array_diff($dbItemIds, $submittedItemIds))
+            && empty(array_diff($submittedItemIds, $dbItemIds));
+
+        if (!$allItemsPresent) {
+            // Handle error - some items are missing or extra items submitted
+            return response()->json(['message' => __('app_translation.sched_item_tampered')], 400);
+        }
+
+        $scheduleItemsFromFrontend = $request->input('schedule_items');
+        foreach ($scheduleItemsFromFrontend as $item) {
+            DB::table('schedule_items')
+                ->where('schedule_id', $schedule->id)
+                ->where('id', $item['id'])
+                ->update(['status_id' => $item['status']['id']]);
+        }
+        DB::commit();
+        return response()->json(['message' => __('app_translation.success')], 200);
+    }
 
     public function store(ScheduleRequest $request)
     {
@@ -129,6 +173,9 @@ class ScheduleController extends Controller
             'is_hour_24' => $request['is_hour_24'] ?? false,
             'schedule_status_id' => ScheduleStatusEnum::Scheduled->value
         ]);
+
+        $projectIds = [];
+        $scheduleItemsData = [];
 
         foreach ($request['scheduleItems'] as $item) {
             // 1. Add schedule item
@@ -170,9 +217,87 @@ class ScheduleController extends Controller
                 'userable_type' => $this->getModelName(get_class($authUser)),
                 'userable_id' => $authUser->id,
             ]);
+
+            $projectIds[] = $item['projectId'];
+
+            // Collect schedule item data for notifications
+            $scheduleItemsData[$item['projectId']] = [
+                'start_time' => $item['slot']['presentation_start'],
+                'end_time' => $item['slot']['presentation_end'],
+            ];
         }
 
         DB::commit();
+        $scheduleDate = Carbon::parse($request['date'])->format('Y-m-d');
+        $results = DB::table('projects as p')
+            ->whereIn('p.id', $projectIds)
+            ->leftJoin('project_trans as pt', 'pt.project_id', '=', 'p.id')
+            ->select(
+                'p.id as project_id',
+                'p.organization_id',
+                DB::raw("MAX(CASE WHEN pt.language_name = 'en' THEN pt.name END) as name_en"),
+                DB::raw("MAX(CASE WHEN pt.language_name = 'fa' THEN pt.name END) as name_fa"),
+                DB::raw("MAX(CASE WHEN pt.language_name = 'ps' THEN pt.name END) as name_ps")
+            )
+            ->groupBy('p.id', 'p.organization_id')
+            ->get();
+
+        // Index projects by project_id for easy access
+        $projectsById = $results->keyBy('project_id');
+
+        foreach ($scheduleItemsData as $projectId => $times) {
+            if (!isset($projectsById[$projectId])) {
+                continue; // Skip if project not found (just in case)
+            }
+
+            $project = $projectsById[$projectId];
+
+            $startTime = Carbon::parse($times['start_time'])->format('g:i A');
+            $endTime = Carbon::parse($times['end_time'])->format('g:i A');
+
+            $message = [
+                'en' => Lang::get(
+                    'app_translation.project_schedule_to_present',
+                    [
+                        'username' => $project->name_en ?? 'Unknown Project',
+                        'start_time' => $startTime,
+                        'end_time' => $endTime,
+                        'date' => $scheduleDate,
+                    ],
+                    'en'
+                ),
+                'fa' => Lang::get(
+                    'app_translation.project_schedule_to_present',
+                    [
+                        'username' => $project->name_fa ?? 'Unknown Project',
+                        'start_time' => $startTime,
+                        'end_time' => $endTime,
+                        'date' => $scheduleDate,
+                    ],
+                    'fa'
+                ),
+                'ps' => Lang::get(
+                    'app_translation.project_schedule_to_present',
+                    [
+                        'username' => $project->name_ps ?? 'Unknown Project',
+                        'start_time' => $startTime,
+                        'end_time' => $endTime,
+                        'date' => $scheduleDate,
+                    ],
+                    'ps'
+                ),
+            ];
+
+            $this->notificationRepository->sendStoreUniqueNotification(
+                NotifierEnum::project_scheduled_for_presentation->value,
+                $message,
+                null,
+                null,
+                'projects',
+                $project->organization_id
+            );
+        }
+
         return response()->json(['message' => __('app_translation.success')], 200);
     }
 
@@ -279,6 +404,7 @@ class ScheduleController extends Controller
         // Final data structure with projects & special_projects included
         $data = [
             'id' => $schedule->id,
+            "schedule_status_id" => $schedule->schedule_status_id,
             'date' => $schedule->date,
             'start_time' => $schedule->start_time,
             'end_time' => $schedule->end_time,
@@ -516,6 +642,7 @@ class ScheduleController extends Controller
             if (!isset($scheduleItems[$id])) {
                 // Initialize schedule item entry
                 $scheduleItems[$id] = [
+                    'id' => $row->schedule_item_id,
                     'start_time' => $row->start_time,
                     'end_time' => $row->end_time,
                     'project_id' => $row->project_id,

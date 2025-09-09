@@ -94,5 +94,41 @@ class NotifierSeeder extends Seeder
             'value' => "لاسلیک شوی د نوم لیکنې فورمه ومنل شوه",
             'language_name' => LanguageEnum::pashto,
         ]);
+        $type = NotifierType::create([
+            "id" => NotifierEnum::project_scheduled_for_presentation->value,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "Project scheduled for presentation",
+            'language_name' => LanguageEnum::default,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "پروژه برای پرزنتیشن برنامه ریزی شده است",
+            'language_name' => LanguageEnum::farsi,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "پروژه د وړاندې کولو لپاره ټاکل شوې ده",
+            'language_name' => LanguageEnum::pashto,
+        ]);
+        $type = NotifierType::create([
+            "id" => NotifierEnum::project_recieved_comment->value,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "The project received comments",
+            'language_name' => LanguageEnum::default,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "پروژه نظراتی دریافت کرد.",
+            'language_name' => LanguageEnum::farsi,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "پروژه تبصرې ترلاسه کړې",
+            'language_name' => LanguageEnum::pashto,
+        ]);
     }
 }
