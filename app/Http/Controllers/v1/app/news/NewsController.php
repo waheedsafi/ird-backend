@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use App\Enums\Languages\LanguageEnum;
+use App\Enums\Statuses\PriorityEnum;
 use App\Http\Requests\v1\news\NewsStoreRequest;
 use App\Http\Requests\v1\news\NewsUpdateRequest;
 use App\Traits\FileHelperTrait;
@@ -390,6 +391,86 @@ class NewsController extends Controller
                 'message' => __('app_translation.failed'),
             ], 400, [], JSON_UNESCAPED_UNICODE);
     }
+
+
+    public function highPriorityNews(Request $request)
+    {
+        $locale = App::getLocale();
+
+        $baseQuery = DB::table('news as n')
+            ->join('news_trans as ntr', function ($join) use ($locale) {
+                $join->on('ntr.news_id', '=', 'n.id')
+                    ->where('ntr.language_name', $locale);
+            })
+            ->join('priority as pri', 'pri.id', '=', 'n.priority_id')
+            ->join('news_documents as nd', 'nd.news_id', '=', 'n.id')
+            ->orderBy('n.date', 'desc')
+            ->select(
+                'ntr.title',
+                'ntr.contents',
+                'nd.url as image',
+                'pri.id as priority'
+            );
+
+        $limit = 6;
+
+        // Step 1: High
+        $high = (clone $baseQuery)
+            ->where('pri.id', PriorityEnum::high)
+            ->limit($limit)
+            ->get();
+
+        $count = $high->count();
+
+        if ($count < $limit) {
+            // Step 2: Medium
+            $medium = (clone $baseQuery)
+                ->where('pri.id', PriorityEnum::medium)
+                ->limit($limit - $count)
+                ->get();
+            $high = $high->merge($medium);
+            $count = $high->count();
+
+            if ($count < $limit) {
+                // Step 3: Low
+                $low = (clone $baseQuery)
+                    ->where('pri.id', PriorityEnum::low)
+                    ->limit($limit - $count)
+                    ->get();
+                $high = $high->merge($low);
+            }
+        }
+
+        return response()->json([
+            "newses" => $high
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+    public function latestNews(Request $request)
+    {
+        $locale = App::getLocale();
+
+        $newses = DB::table('news as n')
+            ->join('news_trans as ntr', function ($join) use ($locale) {
+                $join->on('ntr.news_id', '=', 'n.id')
+                    ->where('ntr.language_name', $locale);
+            })
+            ->join('priority as pri', 'pri.id', '=', 'n.priority_id')
+            ->join('news_documents as nd', 'nd.news_id', '=', 'n.id')
+            ->orderBy('n.date', 'desc') // Just latest, no priority filter
+            ->select(
+                'ntr.title',
+                'ntr.contents',
+                'nd.url as image',
+
+            )
+            ->limit(6)
+            ->get();
+
+        return response()->json([
+            "newses" => $newses
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
 
     // search function 
     protected function applySearch($query, $request)
