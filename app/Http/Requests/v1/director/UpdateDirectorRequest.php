@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\v1\director;
 
+use App\Models\Director;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateDirectorRequest extends FormRequest
 {
@@ -29,7 +31,14 @@ class UpdateDirectorRequest extends FormRequest
             'name_farsi' => 'required|string|max:128',
             'gender.id' => 'required|exists:genders,id',
             'nid' => 'required|string|max:50',
-            'email' => 'required|email:rfc,filter',
+            'email' => [
+                'required',
+                'email:rfc,filter',
+                Rule::unique('emails', 'value')->ignore(
+                    Director::find($this->id)?->email_id, // the email record id
+                    'id' // primary key in emails table
+                )
+            ],
 
             'identity_type.id' => 'required|exists:nid_types,id',
             'nationality.id' => 'required|exists:countries,id',

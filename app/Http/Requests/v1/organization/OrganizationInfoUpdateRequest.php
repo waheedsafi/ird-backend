@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\v1\organization;
 
+use App\Models\Organization;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class OrganizationInfoUpdateRequest extends FormRequest
 {
@@ -65,8 +67,14 @@ class OrganizationInfoUpdateRequest extends FormRequest
             "area_pashto" => "required|max:128|min:5",
             "area_farsi" => "required|max:128|min:5",
             "contact" => "required",
-            'email' => 'required|email:rfc,filter|unique:emails,value',
-
+            'email' => [
+                'required',
+                'email:rfc,filter',
+                Rule::unique('emails', 'value')->ignore(
+                    Organization::find($this->id)?->email_id, // the email record id
+                    'id' // primary key in emails table
+                )
+            ],
         ];
     }
 
