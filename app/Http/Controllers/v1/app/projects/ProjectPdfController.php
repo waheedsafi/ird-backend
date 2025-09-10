@@ -222,7 +222,8 @@ class ProjectPdfController extends Controller
 
     protected function loadProjectData($lang, $id)
     {
-        $locale = 'en'; // e.g., 'en', 'fa', 'ps'
+        $locale = $lang;
+
 
         // 1. Main project info with joined donor/currency
         $project = DB::table('projects as p')
@@ -230,7 +231,13 @@ class ProjectPdfController extends Controller
                 $join->on('prm.project_id', 'p.id')
                     ->where('prm.is_active', true);
             })
-            ->leftJoin('donor_trans as d', 'd.donor_id', '=', 'p.donor_id')
+            ->leftJoin(
+                'donor_trans as d',
+                function ($join) use ($locale) {
+                    $join->on('d.donor_id', '=', 'p.donor_id')
+                        ->where('d.language_name', $locale);
+                }
+            )
             ->leftJoin('currency_trans as c', 'c.id', '=', 'p.currency_id')
             ->leftJoin('organization_trans as nt', function ($join) use ($lang) {
                 $join->on('p.organization_id', 'nt.organization_id')
@@ -238,7 +245,7 @@ class ProjectPdfController extends Controller
             })
             ->leftJoin('project_trans as prot', function ($join) use ($lang) {
                 $join->on('p.organization_id', 'nt.organization_id')
-                    ->where('nt.language_name', $lang);
+                    ->where('prot.language_name', $lang);
             })
             ->where('p.id', $id)
             ->select(
