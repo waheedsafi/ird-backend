@@ -176,10 +176,11 @@ class OrganizationPdfController extends Controller
         $lang = $request->input('lang');
 
         // Create new Mpdf instance with language/font support
-        $mpdf = new Mpdf();
-        $mpdf->autoScriptToLang = true;
-        $mpdf->autoLangToFont = true;
-
+        $mpdf = new \Mpdf\Mpdf([
+            'tempDir' => storage_path('tmp'), // Use your writable tmp directory
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
+        ]);
         // ✅ Add watermark (same as old code)
         $mpdf->SetWatermarkText('MoPH');
         $mpdf->showWatermarkText = true;
