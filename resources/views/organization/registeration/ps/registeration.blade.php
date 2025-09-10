@@ -91,7 +91,8 @@
     <body>
 
         <div class="min-logo-div">
-            {{-- <img src="{{ storage_path('app/public/images/emart.png') }}" class="min-logo" alt=""> --}}
+            {{-- <img src="images/emart.png" class="min-logo" alt=""> --}}
+            <img src="images/moph.png" class="moph-logo" alt="">
 
             <h4 class="header-text">د افغانستان اسلامي امارت</h4>
             <h4 class="header-text">د عامې روغتیا وزارت

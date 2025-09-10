@@ -14,195 +14,167 @@ use Mpdf\Mpdf;
 class OrganizationPdfController extends Controller
 {
     use PdfGeneratorTrait;
-    // public function generateForm(Request $request, $id)
-    // {
-    //     // return $request;
-    //     $mpdf =  $this->generatePdf();
-    //     $this->setWatermark($mpdf);
-    //     $lang = $request->input('language_name');
-    //     $lang = ['en','ps','fa'];
-
-    //     // $this->setFooter($mpdf, PdfFooterEnum::REGISTER_FOOTER->value);
-    //     // $this->setFooter($mpdf, PdfFooterEnum::MOU_FOOTER_en->value);
-
-    //     foreach($lang as $key){
-    //         $data = $this->loadOrganizationData($key, $id);
-
-    //     }
 
 
+    public function generateForm(Request $request)
+    {
 
-    //     // return view('project.mou.pdf.');
-    //     // $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mou", $data);
-    //     $this->pdfFilePart($mpdf, "organization.registeration.{$lang}.registeration", $data);
-    //     // Write additional HTML content
+        // $languages = ['en', 'ps', 'fa'];
+        $pdfFiles = [];
+        $id = $request->id;
+        $lang = $request->lang;
 
-    //     // $mpdf->AddPage();
+        // // Ensure temp folder exists
+
+        $lang = $request->input('lang');
+
+        $mpdf = $this->generatePdf();
+        $this->setWatermark($mpdf);
+        $data = $this->loadOrganizationData($lang, $id);
+
+        // Generate PDF content
+        $this->pdfFilePart($mpdf, "organization.registeration.{$lang}.registeration", $data);
+        $mpdf->SetProtection(['print']);
+
+        // Save PDF to temp folder
+        // Set protection
+        $mpdf->SetProtection(['print']);
+
+        // Store the PDF temporarily
+        $fileName = "{$data['ngo_name']}_{$lang}.pdf";
+        $outputPath = storage_path("app/private/temp/");
+        if (!is_dir($outputPath)) {
+            mkdir($outputPath, 0755, true);
+        }
+        $filePath = $outputPath . $fileName;
+
+        $mpdf->Output($filePath, 'F');
+
+        // Return response for downloading and delete after send
+        return response()->download($filePath)->deleteFileAfterSend(true);
 
 
-    //     $mpdf->SetProtection(
-    //         ['print'],  // Permissions (Disallow Copy & Print)
+        // Check if PDF was created successfully
+        if (file_exists($filePath)) {
+            return response()->file($filePath)->deleteFileAfterSend(true);
+        } else {
+            Log::error("PDF generation failed for language: {$lang}");
+        }
 
-    //     );
+        foreach ($languages as $lang) {
+            try {
+                Log::error("Missing file, cannot add to pdf:  " . $lang);
 
-    //     // Output the generated PDF to the browser
-    //     return $mpdf->Output('document.pdf', 'D'); // Stream PDF to browser
+                // Generate PDF
+                Log::info($lang);
 
-    // }
+                $mpdf = $this->generatePdf();
+                $this->setWatermark($mpdf);
+                $data = $this->loadOrganizationData($lang, $id);
+
+                // Generate PDF content
+                $this->pdfFilePart($mpdf, "organization.registeration.{$lang}.registeration", $data);
+                $mpdf->SetProtection(['print']);
+
+                // Save PDF to temp folder
+                $fileName = "{$data['ngo_name']}_registration_{$lang}.pdf";
+                $filePath = $tempPath . $fileName;
+                $mpdf->Output($filePath, 'F');
+
+                // Check if PDF was created successfully
+                if (file_exists($filePath)) {
+                    $pdfFiles[] = $filePath;
+                } else {
+                    Log::error("PDF generation failed for language: {$lang}");
+                }
+            } catch (\Exception $e) {
+                Log::error("Error generating PDF for {$lang}: " . $e->getMessage());
+            }
+        }
+        Log::error("Missing file, cannot add to generate all pdf: open ");
+
+
+        // Create ZIP file if at least one PDF exists
+        if (!empty($pdfFiles)) {
+            $zipFile = storage_path('app/private/documents.zip');
+            $zip = new ZipArchive();
+            Log::error("Missing file, cannot add to ZIP: openx ");
+
+            if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
+                foreach ($pdfFiles as $file) {
+                    if (file_exists($file)) {
+                        $zip->addFile($file, basename($file));
+                    } else {
+                        Log::error("Missing file, cannot add to ZIP: {$file}");
+                    }
+                }
+                $zip->close();
+                Log::error("Missing file, cannot add to ZIP : ");
+
+                // Delete individual PDFs after zipping
+                foreach ($pdfFiles as $file) {
+                    @unlink($file);
+                }
+
+                Log::error("Missing file, cannot add to ZIP: download ");
+
+                // Return ZIP as download
+                return response()->download($zipFile);
+                // return response()->download($zipFile)->deleteFileAfterSend(true);
+            } else {
+                Log::error("Failed to create ZIP file");
+                return response()->json(['error' => 'Failed to create ZIP file'], 500);
+            }
+        } else {
+            return response()->json(['error' => 'No PDFs generated'], 500);
+        }
+    }
 
 
 
     // public function generateForm(Request $request)
     // {
-    //     $languages = ['en'];
-    //     // $languages = ['en', 'ps', 'fa'];
-    //     $pdfFiles = [];
     //     $id = $request->id;
-    //     Log::info($id);
+    //     $lang = $request->input('lang');
+    //     Log::info("Generating PDF for ID: $id, language: $lang");
 
-    //     // // Ensure temp folder exists
+    //     // Ensure temp folder exists
     //     $tempPath = storage_path("app/private/temp/");
     //     if (!is_dir($tempPath)) {
     //         mkdir($tempPath, 0755, true);
     //     }
-    //     Log::error("Missing file, cannot add to passs  ");
 
-    //     $lang = $request->input('lang');
+    //     $mpdf = new Mpdf();
+    //     $mpdf->autoScriptToLang = true;
+    //     $mpdf->autoLangToFont = true;
 
-    //     $mpdf = $this->generatePdf();
-    //     $this->setWatermark($mpdf);
+    //     // Watermark
+    //     $mpdf->SetWatermarkText('MoPH');
+    //     $mpdf->showWatermarkText = true;
+    //     $mpdf->watermarkTextAlpha = 0.1;
+
+    //     // Load data
     //     $data = $this->loadOrganizationData($lang, $id);
-    //     Log::info($lang);
-    //     // Generate PDF content
-    //     $this->pdfFilePart($mpdf, "organization.registeration.{$lang}.registeration", $data);
+
+    //     // Render Blade view
+    //     $html = view("organization.registeration.{$lang}.registeration", $data)->render();
+    //     $mpdf->WriteHTML($html);
+
+    //     // Optional protection
     //     $mpdf->SetProtection(['print']);
 
     //     // Save PDF to temp folder
     //     $fileName = "{$data['ngo_name']}_registration_{$lang}.pdf";
     //     $filePath = $tempPath . $fileName;
-    //     $mpdf->Output($filePath, 'F');
+    //     $mpdf->Output($filePath, 'F'); // Save instead of force download
 
-    //     // Check if PDF was created successfully
     //     if (file_exists($filePath)) {
     //         return response()->file($filePath)->deleteFileAfterSend(true);
     //     } else {
     //         Log::error("PDF generation failed for language: {$lang}");
-    //     }
-
-    //     foreach ($languages as $lang) {
-    //         try {
-    //             Log::error("Missing file, cannot add to pdf:  " . $lang);
-
-    //             // Generate PDF
-    //             Log::info($lang);
-
-    //             $mpdf = $this->generatePdf();
-    //             $this->setWatermark($mpdf);
-    //             $data = $this->loadOrganizationData($lang, $id);
-
-    //             // Generate PDF content
-    //             $this->pdfFilePart($mpdf, "organization.registeration.{$lang}.registeration", $data);
-    //             $mpdf->SetProtection(['print']);
-
-    //             // Save PDF to temp folder
-    //             $fileName = "{$data['ngo_name']}_registration_{$lang}.pdf";
-    //             $filePath = $tempPath . $fileName;
-    //             $mpdf->Output($filePath, 'F');
-
-    //             // Check if PDF was created successfully
-    //             if (file_exists($filePath)) {
-    //                 $pdfFiles[] = $filePath;
-    //             } else {
-    //                 Log::error("PDF generation failed for language: {$lang}");
-    //             }
-    //         } catch (\Exception $e) {
-    //             Log::error("Error generating PDF for {$lang}: " . $e->getMessage());
-    //         }
-    //     }
-    //     Log::error("Missing file, cannot add to generate all pdf: open ");
-
-
-    //     // Create ZIP file if at least one PDF exists
-    //     if (!empty($pdfFiles)) {
-    //         $zipFile = storage_path('app/private/documents.zip');
-    //         $zip = new ZipArchive();
-    //         Log::error("Missing file, cannot add to ZIP: openx ");
-
-    //         if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-    //             foreach ($pdfFiles as $file) {
-    //                 if (file_exists($file)) {
-    //                     $zip->addFile($file, basename($file));
-    //                 } else {
-    //                     Log::error("Missing file, cannot add to ZIP: {$file}");
-    //                 }
-    //             }
-    //             $zip->close();
-    //             Log::error("Missing file, cannot add to ZIP : ");
-
-    //             // Delete individual PDFs after zipping
-    //             foreach ($pdfFiles as $file) {
-    //                 @unlink($file);
-    //             }
-
-    //             Log::error("Missing file, cannot add to ZIP: download ");
-
-    //             // Return ZIP as download
-    //             return response()->download($zipFile);
-    //             // return response()->download($zipFile)->deleteFileAfterSend(true);
-    //         } else {
-    //             Log::error("Failed to create ZIP file");
-    //             return response()->json(['error' => 'Failed to create ZIP file'], 500);
-    //         }
-    //     } else {
-    //         return response()->json(['error' => 'No PDFs generated'], 500);
+    //         return response()->json(['error' => 'PDF generation failed'], 500);
     //     }
     // }
-
-
-
-    public function generateForm(Request $request)
-    {
-        $id = $request->id;
-        $lang = $request->input('lang');
-        Log::info("Generating PDF for ID: $id, language: $lang");
-
-        // Ensure temp folder exists
-        $tempPath = storage_path("app/private/temp/");
-        if (!is_dir($tempPath)) {
-            mkdir($tempPath, 0755, true);
-        }
-
-        $mpdf = new Mpdf();
-        $mpdf->autoScriptToLang = true;
-        $mpdf->autoLangToFont = true;
-
-        // Watermark
-        $mpdf->SetWatermarkText('MoPH');
-        $mpdf->showWatermarkText = true;
-        $mpdf->watermarkTextAlpha = 0.1;
-
-        // Load data
-        $data = $this->loadOrganizationData($lang, $id);
-
-        // Render Blade view
-        $html = view("organization.registeration.{$lang}.registeration", $data)->render();
-        $mpdf->WriteHTML($html);
-
-        // Optional protection
-        $mpdf->SetProtection(['print']);
-
-        // Save PDF to temp folder
-        $fileName = "{$data['ngo_name']}_registration_{$lang}.pdf";
-        $filePath = $tempPath . $fileName;
-        $mpdf->Output($filePath, 'F'); // Save instead of force download
-
-        if (file_exists($filePath)) {
-            return response()->file($filePath)->deleteFileAfterSend(true);
-        } else {
-            Log::error("PDF generation failed for language: {$lang}");
-            return response()->json(['error' => 'PDF generation failed'], 500);
-        }
-    }
 
 
 
