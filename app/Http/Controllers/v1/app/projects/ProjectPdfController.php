@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\ProjectStatus;
+use Illuminate\Support\Facades\Log;
+use Mpdf\Mpdf;
 use ZipArchive;
 
 class ProjectPdfController extends Controller
@@ -19,38 +21,106 @@ class ProjectPdfController extends Controller
     use PdfGeneratorTrait, AddressTrait;
 
 
-    public function generateMou(Request $request, $id)
+    public function generateMou(Request $request)
     {
         $languages = ['en', 'fa', 'ps'];
         $pdfFiles = [];
 
-        $organizationId = $request->user()->id;
-
+        $id = $request->id;
+        $lang = $request->input('lang');
         // Validate project ownership
-        $projectExists = Project::where('id', $id)
-            ->where('organization_id', $organizationId)
-            ->exists();
 
-        if (! $projectExists) {
-            return response()->json([
-                'error' => __('app_translation.unauthorized'),
 
-            ], 404);
+        // $projectExists = Project::where('id', $id)
+        //     ->where('organization_id', $organizationId)
+        //     ->exists();
+
+        // if (! $projectExists) {
+        //     return response()->json([
+        //         'error' => __('app_translation.unauthorized'),
+
+        //     ], 404);
+        // }
+
+        // // Check if MOU already generated
+        // $mouExists = ProjectStatus::where('project_id', $id)
+        //     ->where([
+        //         ['status_id', '=', StatusEnum::approved->value],
+        //         ['is_active', '=', true],
+        //     ])->exists();
+
+        // if ($mouExists) {
+        //     return response()->json([
+        //         'error' => __('app_translation.unauthorized'),
+
+        //     ], 400);
+        // }
+        // // 
+
+        $mpdf = new Mpdf();
+        $mpdf->autoScriptToLang = true;
+        $mpdf->autoLangToFont = true;
+
+        // Watermark
+        $mpdf->SetWatermarkText('MoPH');
+        $mpdf->SetWatermarkText('MoPH');
+        $data = $this->loadProjectData($lang, $id);
+
+        // STEP 1: Configure TOC
+        $mpdf->TOC([
+            'toc-preHTML' => '<h1 style="text-align:center;">فهرست عناوین</h1><div class="toc">',
+            'toc-postHTML' => '</div>',
+            'toc-bookmarkText' => 'فهرست عناوین',
+            'paging' => true,
+            'links' => true,
+        ]);
+
+        // STEP 2: First part
+        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouFirstPart", $data);
+
+        // Insert TOC page
+        $mpdf->WriteHTML('<tocpagebreak />');
+        $mpdf->WriteHTML('
+            <style>
+                .toc a {
+                    cursor: pointer;
+                    color: blue;
+                    text-decoration: underline;
+                }
+            </style>
+        ');
+
+        // STEP 3: Content before table
+        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitBeforeTable", $data);
+
+        // STEP 4: Landscape section
+        $mpdf->AddPage('L');
+        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_LandscapeTableOnly", $data);
+        $mpdf->AddPage('P');
+
+        // STEP 5: Content after table
+        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitAfterTable", $data);
+
+        // Set protection
+        $mpdf->SetProtection(['print']);
+
+        // Store the PDF temporarily
+        $fileName = "{$data['ngo_name']}_mou_{$lang}.pdf";
+        $outputPath = storage_path("app/private/temp/");
+        if (!is_dir($outputPath)) {
+            mkdir($outputPath, 0755, true);
         }
+        $filePath = $outputPath . $fileName;
 
-        // Check if MOU already generated
-        $mouExists = ProjectStatus::where('project_id', $id)
-            ->where([
-                ['status_id', '=', StatusEnum::approved->value],
-                ['is_active', '=', true],
-            ])->exists();
+        $mpdf->Output($filePath, 'F');
 
-        if ($mouExists) {
-            return response()->json([
-                'error' => __('app_translation.unauthorized'),
-
-            ], 400);
+        if (file_exists($filePath)) {
+            return response()->file($filePath)->deleteFileAfterSend(true);
+        } else {
+            Log::error("PDF generation failed for language: {$lang}");
+            return response()->json(['error' => 'PDF generation failed'], 500);
         }
+        // 
 
 
 
