@@ -125,6 +125,12 @@ class ProjectPdfController extends Controller
 
 
 
+
+
+
+
+        // 
+
         foreach ($languages as $lang) {
             $mpdf = $this->generatePdf();
             $this->setWatermark($mpdf);
