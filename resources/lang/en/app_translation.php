@@ -88,5 +88,7 @@ return [
     'project_doc_approved' => 'Project :username documents have been approved.',
     'project_doc_rejected' => 'Project :username documents have been rejected.',
     'project_schedule_to_present' => ':username is scheduled for presentation on :date from :start_time to :end_time.',
-    "sched_item_tampered" => "Schedule items mismatch or tampered"
+    "sched_item_tampered" => "Schedule items mismatch or tampered",
+    'project_canceled_by_admin' => 'Your project presentation has been canceled by the admin.',
+    'project_presentat_res' => 'Your project has :name .',
 ];

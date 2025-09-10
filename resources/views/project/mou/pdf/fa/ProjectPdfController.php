@@ -128,7 +128,7 @@ class ProjectPdfController extends Controller
         }
 
         // Download ZIP and delete after sending
-        return response()->download($zipFile)->deleteFileAfterSend(true);
+        return response()->file($zipFile);
     }
 
 

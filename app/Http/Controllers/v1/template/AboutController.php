@@ -13,47 +13,37 @@ use App\Enums\Types\AboutStaffEnum;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use App\Enums\Languages\LanguageEnum;
-use Illuminate\Support\Facades\Cache;
 use App\Models\OfficeInformationTrans;
 use App\Http\Requests\v1\about\StaffStoreRequest;
 use App\Http\Requests\v1\about\OfficeStoreRequest;
 use App\Http\Requests\v1\about\StaffUpdateRequest;
 use App\Http\Requests\v1\about\OfficeUpdateRequest;
-use App\Traits\CacheKeyTrait;
 
 class AboutController extends Controller
 {
-    use FileHelperTrait, PathHelperTrait, CacheKeyTrait;
-    private $cacheOffice = "about_office";
-    private $cacheStaff = "about_staff";
-    private $cacheManger = "about_manager";
-    private $cacheTechnical = "about_technical";
-    private $cacheDirector = "about_director";
+    use FileHelperTrait, PathHelperTrait;
 
     public function staffs()
     {
         $locale = App::getLocale();
-        $cacheKey = $this->getKey($this->cacheStaff);
-        $query  = Cache::remember($cacheKey, 1800, function () use ($locale) {
-            return DB::table('about_staff as as')
-                ->join('about_staff_trans as ast', function ($join) use ($locale) {
-                    $join->on('ast.about_staff_id', '=', 'as.id')
-                        ->where('ast.language_name', '=', $locale);
-                })
-                ->join('about_staff_type_trans as astt', function ($join) use ($locale) {
-                    $join->on('astt.about_staff_type_id', '=', 'as.about_staff_type_id')
-                        ->where('astt.language_name', '=', $locale);
-                })
-                ->select(
-                    'as.id',
-                    'as.contact',
-                    'as.email',
-                    'as.profile as picture',
-                    'ast.name',
-                    'astt.value as job'
-                )
-                ->get();
-        });
+        $query  = DB::table('about_staff as as')
+            ->join('about_staff_trans as ast', function ($join) use ($locale) {
+                $join->on('ast.about_staff_id', '=', 'as.id')
+                    ->where('ast.language_name', '=', $locale);
+            })
+            ->join('about_staff_type_trans as astt', function ($join) use ($locale) {
+                $join->on('astt.about_staff_type_id', '=', 'as.about_staff_type_id')
+                    ->where('astt.language_name', '=', $locale);
+            })
+            ->select(
+                'as.id',
+                'as.contact',
+                'as.email',
+                'as.profile as picture',
+                'ast.name',
+                'astt.value as job'
+            )
+            ->get();
         return response()->json(
             $query,
             200,
@@ -64,10 +54,8 @@ class AboutController extends Controller
 
     public function manager()
     {
-        $cacheKey = $this->getKey($this->cacheStaff);
-
         return response()->json(
-            $this->staffByType(AboutStaffEnum::manager->value, $cacheKey, true),
+            $this->staffByType(AboutStaffEnum::manager->value, true),
             200,
             [],
             JSON_UNESCAPED_UNICODE
@@ -75,10 +63,8 @@ class AboutController extends Controller
     }
     public function technicalSupport()
     {
-        $cacheKey = $this->getKey($this->cacheTechnical);
-
         return response()->json(
-            $this->staffByType(AboutStaffEnum::technical_support->value, $cacheKey),
+            $this->staffByType(AboutStaffEnum::technical_support->value),
             200,
             [],
             JSON_UNESCAPED_UNICODE
@@ -87,10 +73,9 @@ class AboutController extends Controller
     // Director
     public function director()
     {
-        $cacheKey = $this->getKey($this->cacheDirector);
 
         return response()->json(
-            $this->staffByType(AboutStaffEnum::director->value, $cacheKey, true),
+            $this->staffByType(AboutStaffEnum::director->value, true),
             200,
             [],
             JSON_UNESCAPED_UNICODE
@@ -168,18 +153,6 @@ class AboutController extends Controller
         }
         // Commit transaction
         DB::commit();
-        $locale = App::getLocale();
-        // Clear all
-        foreach (
-            [
-                AboutStaffEnum::director,
-                AboutStaffEnum::manager,
-                AboutStaffEnum::technical_support
-            ] as $role
-        ) {
-            $cacheKey = $this->cacheStaff . '_' . $role->value . '_' . $locale;
-            Cache::forget($cacheKey);
-        }
 
         return response()->json([
             'message' => __('app_translation.success'),
@@ -234,10 +207,6 @@ class AboutController extends Controller
         ]);
         DB::commit();
 
-        $locale = App::getLocale();
-        $cacheKey = $this->cacheStaff . '_' . $staffType . '_' . $locale;
-        Cache::forget($cacheKey);
-
         return response()->json([
             'message' => __('app_translation.success'),
             'staff' => [
@@ -251,31 +220,29 @@ class AboutController extends Controller
             ]
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
-    public function staffByType($type, $cacheKey, $selectOne = false)
+    public function staffByType($type, $selectOne = false)
     {
-        return Cache::remember($cacheKey, 1800, function () use ($type, &$selectOne) {
-            $query = DB::table('about_staff as as')
-                ->where('as.about_staff_type_id', $type)
-                ->join('about_staff_trans as ast', 'ast.about_staff_id', '=', 'as.id')
-                ->select(
-                    'as.id',
-                    'as.about_staff_type_id',
-                    'as.contact',
-                    'as.email',
-                    'as.profile as picture',
-                    'as.created_at',
-                    'as.updated_at',
-                    DB::raw("MAX(CASE WHEN ast.language_name = 'en' THEN ast.name END) as name_english"),
-                    DB::raw("MAX(CASE WHEN ast.language_name = 'fa' THEN ast.name END) as name_farsi"),
-                    DB::raw("MAX(CASE WHEN ast.language_name = 'ps' THEN ast.name END) as name_pashto")
-                )
-                ->groupBy('as.id', 'as.about_staff_type_id', 'as.contact', 'as.email', 'as.profile', 'as.created_at', 'as.updated_at');
-            if ($selectOne) {
-                return $query->first();
-            } else {
-                return $query->get();
-            }
-        });
+        $query = DB::table('about_staff as as')
+            ->where('as.about_staff_type_id', $type)
+            ->join('about_staff_trans as ast', 'ast.about_staff_id', '=', 'as.id')
+            ->select(
+                'as.id',
+                'as.about_staff_type_id',
+                'as.contact',
+                'as.email',
+                'as.profile as picture',
+                'as.created_at',
+                'as.updated_at',
+                DB::raw("MAX(CASE WHEN ast.language_name = 'en' THEN ast.name END) as name_english"),
+                DB::raw("MAX(CASE WHEN ast.language_name = 'fa' THEN ast.name END) as name_farsi"),
+                DB::raw("MAX(CASE WHEN ast.language_name = 'ps' THEN ast.name END) as name_pashto")
+            )
+            ->groupBy('as.id', 'as.about_staff_type_id', 'as.contact', 'as.email', 'as.profile', 'as.created_at', 'as.updated_at');
+        if ($selectOne) {
+            return $query->first();
+        } else {
+            return $query->get();
+        }
     }
     // Office
     public function storeOffice(OfficeStoreRequest $request)
@@ -295,9 +262,6 @@ class AboutController extends Controller
         ]);
 
         DB::commit();
-        $locale = App::getLocale();
-        $cacheKey = $this->cacheOffice  . '_' . $locale;
-        Cache::forget($cacheKey);
         return response()->json([
             'message' => __('app_translation.success'),
             'office' => [
@@ -344,9 +308,6 @@ class AboutController extends Controller
 
         // Commit transaction
         DB::commit();
-        $locale = App::getLocale();
-        $cacheKey = $this->cacheOffice  . '_' . $locale;
-        Cache::forget($cacheKey);
 
         return response()->json([
             'message' => __('app_translation.success'),
@@ -363,21 +324,17 @@ class AboutController extends Controller
     public function office()
     {
         $locale = App::getLocale();
-        $locale = App::getLocale();
-        $cacheKey = $this->cacheOffice  . '_' . $locale;
-        $office  = Cache::remember($cacheKey, 1800, function () use ($locale) {
-            return DB::table('office_information as oi')
-                ->join('office_information_trans as oit', function ($join) use (&$locale) {
-                    $join->on('oit.office_information_id', '=', 'oi.id')
-                        ->where('oit.language_name', $locale);
-                })
-                ->select(
-                    'oi.contact',
-                    'oi.email',
-                    'oit.value as address'
-                )
-                ->first();
-        });
+        $office  =  DB::table('office_information as oi')
+            ->join('office_information_trans as oit', function ($join) use (&$locale) {
+                $join->on('oit.office_information_id', '=', 'oi.id')
+                    ->where('oit.language_name', $locale);
+            })
+            ->select(
+                'oi.contact',
+                'oi.email',
+                'oit.value as address'
+            )
+            ->first();
 
         return response()->json(
             $office,

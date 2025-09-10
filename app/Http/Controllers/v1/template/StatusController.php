@@ -104,7 +104,11 @@ class StatusController extends Controller
 
         // Start building the query
         $tr = DB::table('status_trans as st')
-            ->whereIn('st.status_id', [StatusEnum::has_comment->value, StatusEnum::approved->value])
+            ->whereIn('st.status_id', [
+                StatusEnum::has_comment->value,
+                StatusEnum::approved->value,
+                StatusEnum::missed->value
+            ])
             ->where('st.language_name', $locale)
             ->select(
                 "st.status_id as id",

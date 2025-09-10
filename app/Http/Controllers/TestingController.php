@@ -497,5 +497,26 @@ class TestingController extends Controller
             ]
         ]);
     }
-    public function testing(Request $request) {}
+    public function testing(Request $request)
+    {
+        $locale = "en";
+        return  $organizations = DB::table('organizations as org')
+            ->join('organization_trans as orgt', function ($join) use ($locale) {
+                $join->on('org.id', '=', 'orgt.organization_id')
+                    ->where('orgt.language_name', $locale);
+            })
+            ->join('organization_statuses as orgst', function ($join) {
+                $join->on('org.id', '=', 'orgst.organization_id')
+                    ->where('orgst.is_active', true)
+                    ->where('orgst.status_id', StatusEnum::active->value);
+            })
+            ->select(
+                'org.id',
+                'org.profile as as image',
+                'orgt.name as title'
+            )
+            ->orderBy('org.created_at', 'desc')
+            ->limit(6)
+            ->get();
+    }
 }

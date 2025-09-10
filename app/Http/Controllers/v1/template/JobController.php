@@ -97,9 +97,9 @@ class JobController extends Controller
         return response()->json(
             [
                 "id" => $job->model_job_id,
-                "english" => $job->english,
-                "farsi" => $job->farsi,
-                "pashto" => $job->pashto,
+                "name_english" => $job->english,
+                "name_farsi" => $job->farsi,
+                "name_pashto" => $job->pashto,
             ],
             200,
             [],

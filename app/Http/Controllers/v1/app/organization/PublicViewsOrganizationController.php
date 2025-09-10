@@ -19,28 +19,28 @@ class PublicViewsOrganizationController extends Controller
         $organizations = DB::table('organizations as org')
             ->join('organization_trans as orgt', function ($join) use ($locale) {
                 $join->on('org.id', '=', 'orgt.organization_id')
-                    ->where('orgt.locale', $locale);
+                    ->where('orgt.language_name', $locale);
             })
             ->join('organization_statuses as orgst', function ($join) {
                 $join->on('org.id', '=', 'orgst.organization_id')
                     ->where('orgst.is_active', true)
-                    ->where('orgst.status_id', StatusEnum::registered->value);
+                    ->where('orgst.status_id', StatusEnum::active->value);
             })
             ->select(
                 'org.id',
-                'org.profile as logo',
-                'orgt.name'
+                'org.profile as as image',
+                'orgt.name as title'
             )
             ->orderBy('org.created_at', 'desc')
             ->limit(6)
             ->get();
 
-        return response()->json([
-            'status' => 'success',
-            'data' => [
-                'organizations' => $organizations,
-            ],
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        return response()->json(
+            $organizations,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 
     public function topOrganizationsByProjects()
