@@ -81,9 +81,9 @@
     <body>
 
         <div class="min-logo-div">
-            {{-- <img src="{{ public_path('storage/images/emart.png') }}" class="min-logo" alt="">
-            <img src="{{ public_path('storage/images/moph.png') }}" class="moph-logo" alt="">
-            <img src="{{ public_path('storage/images/header.png') }}" class="header-logo" alt=""> --}}
+            <img src="images/emart.png" class="min-logo" alt="">
+            <img src="images/moph.png" class="moph-logo" alt="">
+            <img src="images/header.png" class="header-logo" alt="">
 
             <div class="header-text-cont">
                 <h5 class="header-text">Islamic Emirate Of Afghanistan</h5>

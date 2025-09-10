@@ -23,61 +23,53 @@ class ProjectPdfController extends Controller
 
     public function generateMou(Request $request)
     {
+        $languages = ['en', 'fa', 'ps'];
         $pdfFiles = [];
-
-        $id = $request->id;
         $lang = $request->lang;
+        $id = $request->id;
+
+        $organizationId = $request->user()->id;
+
         // Validate project ownership
+        $projectExists = Project::where('id', $id)
+            ->where('organization_id', $organizationId)
+            ->exists();
+
+        if (! $projectExists) {
+            return response()->json([
+                'error' => __('app_translation.unauthorized'),
+
+            ], 404);
+        }
+
+        // Check if MOU already generated
+        $mouExists = ProjectStatus::where('project_id', $id)
+            ->where([
+                ['status_id', '=', StatusEnum::approved->value],
+                ['is_active', '=', true],
+            ])->exists();
+
+        if ($mouExists) {
+            return response()->json([
+                'error' => __('app_translation.unauthorized'),
+
+            ], 400);
+        }
 
 
-        // $projectExists = Project::where('id', $id)
-        //     ->where('organization_id', $organizationId)
-        //     ->exists();
+        $mpdf = $this->generatePdf();
+        $this->setWatermark($mpdf);
 
-        // if (! $projectExists) {
-        //     return response()->json([
-        //         'error' => __('app_translation.unauthorized'),
-
-        //     ], 404);
-        // }
-
-        // // Check if MOU already generated
-        // $mouExists = ProjectStatus::where('project_id', $id)
-        //     ->where([
-        //         ['status_id', '=', StatusEnum::approved->value],
-        //         ['is_active', '=', true],
-        //     ])->exists();
-
-        // if ($mouExists) {
-        //     return response()->json([
-        //         'error' => __('app_translation.unauthorized'),
-
-        //     ], 400);
-        // }
-        // // 
-
-        $mpdf = new Mpdf();
-        $mpdf->autoScriptToLang = true;
-        $mpdf->autoLangToFont = true;
-
-        // Watermark
-        $mpdf->SetWatermarkText('MoPH');
-        $mpdf->SetWatermarkText('MoPH');
         $data = $this->loadProjectData($lang, $id);
 
         // STEP 1: Configure TOC
-        $mpdf->TOC([
-            'toc-preHTML' => '<h1 style="text-align:center;">فهرست عناوین</h1><div class="toc">',
-            'toc-postHTML' => '</div>',
-            'toc-bookmarkText' => 'فهرست عناوین',
-            'paging' => true,
-            'links' => true,
-        ]);
+
 
         // STEP 2: First part
         $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouFirstPart", $data);
 
         // Insert TOC page
+
         $mpdf->WriteHTML('<tocpagebreak />');
         $mpdf->WriteHTML('
             <style>
@@ -88,6 +80,14 @@ class ProjectPdfController extends Controller
                 }
             </style>
         ');
+        $mpdf->TOC([
+            'toc-preHTML' => '<h1 style="text-align:center;">فهرست عناوین</h1><div class="toc">',
+            'toc-postHTML' => '</div>',
+            'toc-bookmarkText' => 'فهرست عناوین',
+            'paging' => true,
+            'links' => true,
+        ]);
+
 
         // STEP 3: Content before table
         $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitBeforeTable", $data);
@@ -113,22 +113,10 @@ class ProjectPdfController extends Controller
 
         $mpdf->Output($filePath, 'F');
 
-        if (file_exists($filePath)) {
-            return response()->file($filePath)->deleteFileAfterSend(true);
-        } else {
-            Log::error("PDF generation failed for language: {$lang}");
-            return response()->json(['error' => 'PDF generation failed'], 500);
-        }
-        // 
+        // Return response for downloading and delete after send
+        return response()->download($filePath)->deleteFileAfterSend(true);
 
 
-
-
-
-
-
-
-        // 
 
         foreach ($languages as $lang) {
             $mpdf = $this->generatePdf();
@@ -175,7 +163,12 @@ class ProjectPdfController extends Controller
             $mpdf->SetProtection(['print']);
 
             // Store the PDF temporarily
-            $fileName = "{$data['ngo_name']}_mou_{$lang}.pdf";
+            // Replace spaces with underscores or remove them
+            $fileName = str_replace(' ', '_', "{$data['ngo_name']}_mou_{$lang}.pdf");
+
+            // Ensure the filename is safe
+            $fileName = basename($fileName);
+
             $outputPath = storage_path("app/private/temp/");
             if (!is_dir($outputPath)) {
                 mkdir($outputPath, 0755, true);
@@ -197,25 +190,12 @@ class ProjectPdfController extends Controller
             $zip->close();
         }
 
-
-
-
-        // 
-
         // Cleanup temporary PDFs
         foreach ($pdfFiles as $file) {
             unlink($file);
         }
 
-        return response()->stream(function () use ($zipFile) {
-            readfile($zipFile);        // Send the file content to the browser
-            unlink($zipFile);          // Delete the file after sending
-        }, 200, [
-            'Content-Type' => 'application/zip',
-            'Content-Disposition' => 'inline; filename="' . basename($zipFile) . '"',
-        ]);
         // Download ZIP and delete after sending
-        return response()->file($zipFile);
         return response()->download($zipFile)->deleteFileAfterSend(true);
     }
 
@@ -425,3 +405,71 @@ class ProjectPdfController extends Controller
         return $data;
     }
 }
+
+
+
+
+//    $mpdf = new Mpdf();
+//         $mpdf->autoScriptToLang = true;
+//         $mpdf->autoLangToFont = true;
+
+//         // Watermark
+//         $mpdf->SetWatermarkText('MoPH');
+//         $mpdf->SetWatermarkText('MoPH');
+//         $data = $this->loadProjectData($lang, $id);
+
+//         // STEP 1: Configure TOC
+//         $mpdf->TOC([
+//             'toc-preHTML' => '<h1 style="text-align:center;">فهرست عناوین</h1><div class="toc">',
+//             'toc-postHTML' => '</div>',
+//             'toc-bookmarkText' => 'فهرست عناوین',
+//             'paging' => true,
+//             'links' => true,
+//         ]);
+
+//         // STEP 2: First part
+//         $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouFirstPart", $data);
+
+//         // Insert TOC page
+//         $mpdf->WriteHTML('<tocpagebreak />');
+//         $mpdf->WriteHTML('
+//             <style>
+//                 .toc a {
+//                     cursor: pointer;
+//                     color: blue;
+//                     text-decoration: underline;
+//                 }
+//             </style>
+//         ');
+
+//         // STEP 3: Content before table
+//         $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitBeforeTable", $data);
+
+//         // STEP 4: Landscape section
+//         $mpdf->AddPage('L');
+//         $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_LandscapeTableOnly", $data);
+//         $mpdf->AddPage('P');
+
+//         // STEP 5: Content after table
+//         $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitAfterTable", $data);
+
+//         // Set protection
+//         $mpdf->SetProtection(['print']);
+
+//         // Store the PDF temporarily
+//         $fileName = "{$data['ngo_name']}_mou_{$lang}.pdf";
+//         $outputPath = storage_path("app/private/temp/");
+//         if (!is_dir($outputPath)) {
+//             mkdir($outputPath, 0755, true);
+//         }
+//         $filePath = $outputPath . $fileName;
+
+//         $mpdf->Output($filePath, 'F');
+
+//         if (file_exists($filePath)) {
+//             return response()->file($filePath)->deleteFileAfterSend(true);
+//         } else {
+//             Log::error("PDF generation failed for language: {$lang}");
+//             return response()->json(['error' => 'PDF generation failed'], 500);
+//         }
+//         // 
