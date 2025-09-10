@@ -162,53 +162,48 @@ class OrganizationPdfController extends Controller
 
     public function generateForm(Request $request)
     {
-        $pdfFiles = [];
         $id = $request->id;
-        Log::info($id);
+        $lang = $request->input('lang');
+        Log::info("Generating PDF for ID: $id, language: $lang");
 
         // Ensure temp folder exists
         $tempPath = storage_path("app/private/temp/");
         if (!is_dir($tempPath)) {
             mkdir($tempPath, 0755, true);
         }
-        Log::error("Missing file, cannot add to passs");
 
-        $lang = $request->input('lang');
+        $mpdf = new Mpdf();
+        $mpdf->autoScriptToLang = true;
+        $mpdf->autoLangToFont = true;
 
-        // Create new Mpdf instance with language/font support
-        $mpdf = new \Mpdf\Mpdf([
-            'tempDir' => storage_path('tmp'), // Use your writable tmp directory
-            'autoScriptToLang' => true,
-            'autoLangToFont' => true,
-        ]);
-        // ✅ Add watermark (same as old code)
+        // Watermark
         $mpdf->SetWatermarkText('MoPH');
         $mpdf->showWatermarkText = true;
-        $mpdf->watermarkTextAlpha = 0.1; // light transparency
+        $mpdf->watermarkTextAlpha = 0.1;
 
         // Load data
         $data = $this->loadOrganizationData($lang, $id);
-        Log::info($lang);
 
-        // Render blade view
+        // Render Blade view
         $html = view("organization.registeration.{$lang}.registeration", $data)->render();
         $mpdf->WriteHTML($html);
 
-        // Optional: set protection
+        // Optional protection
         $mpdf->SetProtection(['print']);
 
         // Save PDF to temp folder
         $fileName = "{$data['ngo_name']}_registration_{$lang}.pdf";
         $filePath = $tempPath . $fileName;
-        $mpdf->Output($filePath, 'F');
+        $mpdf->Output($filePath, 'F'); // Save instead of force download
 
-        // Return response if created successfully
         if (file_exists($filePath)) {
             return response()->file($filePath)->deleteFileAfterSend(true);
         } else {
             Log::error("PDF generation failed for language: {$lang}");
+            return response()->json(['error' => 'PDF generation failed'], 500);
         }
     }
+
 
 
     protected function loadOrganizationData($locale, $id)
