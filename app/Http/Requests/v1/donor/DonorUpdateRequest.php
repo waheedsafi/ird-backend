@@ -22,7 +22,12 @@ class DonorUpdateRequest extends FormRequest
             'name_english'  => 'required|string|max:255',
             'name_farsi'     => 'required|string|max:255',
             'name_pashto'    => 'required|string|max:255',
-            'abbr'           => 'required|string|max:10',
+            'abbr' => [
+                'required',
+                'alpha', // only letters
+                'max:50',
+                Rule::unique('donors', 'abbr')->ignore($donorId),
+            ],
             'username'       => "required|string|max:100|unique:donors,username,{$donorId}",
             'contact'        => 'required|string|max:15',
             'email' => [
