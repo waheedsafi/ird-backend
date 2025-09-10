@@ -130,5 +130,41 @@ class NotifierSeeder extends Seeder
             'value' => "پروژه تبصرې ترلاسه کړې",
             'language_name' => LanguageEnum::pashto,
         ]);
+        $type = NotifierType::create([
+            "id" => NotifierEnum::project_presentation_canceled->value,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "Project presentation canceled",
+            'language_name' => LanguageEnum::default,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "ارائه پروژه لغو شد",
+            'language_name' => LanguageEnum::farsi,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "د پروژې وړاندې کول لغوه شول",
+            'language_name' => LanguageEnum::pashto,
+        ]);
+        $type = NotifierType::create([
+            "id" => NotifierEnum::project_presentation_completed->value,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "Project presentation completed",
+            'language_name' => LanguageEnum::default,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "ارائه پروژه تکمیل شد",
+            'language_name' => LanguageEnum::farsi,
+        ]);
+        NotifierTypeTrans::create([
+            'notifier_type_id' => $type->id,
+            'value' => "د پروژې پریزنټیشن بشپړ شو",
+            'language_name' => LanguageEnum::pashto,
+        ]);
     }
 }
