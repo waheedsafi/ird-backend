@@ -217,7 +217,7 @@ class ProjectPdfController extends Controller
 
     protected function loadProjectData($lang, $id)
     {
-        $locale = App::getLocale(); // e.g., 'en', 'fa', 'ps'
+        $locale = $lang; // e.g., 'en', 'fa', 'ps'
 
         // 1. Main project info with joined donor/currency
         $project = DB::table('projects as p')
