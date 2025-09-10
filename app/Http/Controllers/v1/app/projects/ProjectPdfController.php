@@ -23,11 +23,10 @@ class ProjectPdfController extends Controller
 
     public function generateMou(Request $request)
     {
-        $languages = ['en', 'fa', 'ps'];
         $pdfFiles = [];
 
         $id = $request->id;
-        $lang = $request->input('lang');
+        $lang = $request->lang;
         // Validate project ownership
 
 
@@ -223,7 +222,7 @@ class ProjectPdfController extends Controller
 
     protected function loadProjectData($lang, $id)
     {
-        $locale = $lang; // e.g., 'en', 'fa', 'ps'
+        $locale = 'en'; // e.g., 'en', 'fa', 'ps'
 
         // 1. Main project info with joined donor/currency
         $project = DB::table('projects as p')
