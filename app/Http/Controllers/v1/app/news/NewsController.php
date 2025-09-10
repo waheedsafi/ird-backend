@@ -245,7 +245,7 @@ class NewsController extends Controller
         ]);
 
         // 3. Store documents
-        $document = $this->storePublicDocument($request, "news", 'cover_pic');
+        $document = $this->storePublicDocument($request, "news/", 'cover_pic');
         NewsDocument::create([
             "news_id" => $news->id,
             "url" => $document['path'],
@@ -402,12 +402,13 @@ class NewsController extends Controller
                 $join->on('ntr.news_id', '=', 'n.id')
                     ->where('ntr.language_name', $locale);
             })
-            ->join('priority as pri', 'pri.id', '=', 'n.priority_id')
+            ->join('priorities as pri', 'pri.id', '=', 'n.priority_id')
             ->join('news_documents as nd', 'nd.news_id', '=', 'n.id')
             ->orderBy('n.date', 'desc')
             ->select(
+                'n.id',
                 'ntr.title',
-                'ntr.contents',
+                'ntr.contents as description',
                 'nd.url as image',
                 'pri.id as priority'
             );
@@ -441,9 +442,12 @@ class NewsController extends Controller
             }
         }
 
-        return response()->json([
-            "newses" => $high
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        return response()->json(
+            $high,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
     public function latestNews(Request $request)
     {
@@ -454,21 +458,25 @@ class NewsController extends Controller
                 $join->on('ntr.news_id', '=', 'n.id')
                     ->where('ntr.language_name', $locale);
             })
-            ->join('priority as pri', 'pri.id', '=', 'n.priority_id')
+            ->join('priorities as pri', 'pri.id', '=', 'n.priority_id')
             ->join('news_documents as nd', 'nd.news_id', '=', 'n.id')
             ->orderBy('n.date', 'desc') // Just latest, no priority filter
             ->select(
+                'n.id',
                 'ntr.title',
-                'ntr.contents',
+                'ntr.contents as description',
                 'nd.url as image',
 
             )
             ->limit(6)
             ->get();
 
-        return response()->json([
-            "newses" => $newses
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        return response()->json(
+            $newses,
+            200,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 
 

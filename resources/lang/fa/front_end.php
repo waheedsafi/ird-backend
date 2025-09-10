@@ -579,4 +579,6 @@ return [
     "sho_pren_info" => "نمایش اطلاعات پرزنتیشن",
     "is_pending" => "در انتظار است",
     'project_canceled_by_admin' => 'ارائه پروژه شما توسط مدیر لغو شده است.',
+    "featured" => "ویژه",
+    "latest" => "جدیدترین"
 ];

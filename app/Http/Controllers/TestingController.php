@@ -499,19 +499,24 @@ class TestingController extends Controller
     }
     public function testing(Request $request)
     {
-        return         $statusTrans = DB::table('status_trans as st')
-            ->whereIn('st.status_id', [
-                StatusEnum::has_comment->value,
-                StatusEnum::approved->value,
-                StatusEnum::missed->value
-            ])
+        $locale = "en";
+        return  $organizations = DB::table('organizations as org')
+            ->join('organization_trans as orgt', function ($join) use ($locale) {
+                $join->on('org.id', '=', 'orgt.organization_id')
+                    ->where('orgt.language_name', $locale);
+            })
+            ->join('organization_statuses as orgst', function ($join) {
+                $join->on('org.id', '=', 'orgst.organization_id')
+                    ->where('orgst.is_active', true)
+                    ->where('orgst.status_id', StatusEnum::active->value);
+            })
             ->select(
-                'st.status_id',
-                DB::raw("MAX(CASE WHEN st.language_name = 'fa' THEN st.name END) as farsi"),
-                DB::raw("MAX(CASE WHEN st.language_name = 'en' THEN st.name END) as english"),
-                DB::raw("MAX(CASE WHEN st.language_name = 'ps' THEN st.name END) as pashto")
+                'org.id',
+                'org.profile as as image',
+                'orgt.name as title'
             )
-            ->groupBy('st.status_id')
+            ->orderBy('org.created_at', 'desc')
+            ->limit(6)
             ->get();
     }
 }
