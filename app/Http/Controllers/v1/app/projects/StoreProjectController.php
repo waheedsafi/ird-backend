@@ -385,7 +385,7 @@ class StoreProjectController extends Controller
         $this->pendingTaskRepository->destroyPendingTask(
             $authUser,
             TaskTypeEnum::project_registeration->value,
-            $organization_id
+            $task->id
         );
 
         ProjectStatus::where('project_id', $project_id)->update(['is_active' => false]);
