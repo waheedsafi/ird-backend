@@ -300,7 +300,7 @@ class StoreProjectController extends Controller
         $this->pendingTaskRepository->destroyPendingTask(
             $request->user(),
             TaskTypeEnum::project_registeration,
-            $user_id
+            $task->id
         );
 
         return response()->json([
