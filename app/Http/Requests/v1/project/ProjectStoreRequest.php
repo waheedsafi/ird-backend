@@ -44,9 +44,9 @@ class ProjectStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "project_name_english" => 'required|string|max:128|min:5',
-            "project_name_farsi" =>  'required|string|max:128|min:5',
-            "project_name_pashto" => 'required|string|max:128|min:5',
+            "project_name_english" => 'required|string|max:255|min:5',
+            "project_name_farsi" =>  'required|string|max:255|min:5',
+            "project_name_pashto" => 'required|string|max:255|min:5',
             // Dates
             'start_date' => 'required|before:end_date',
             'end_date'   => 'required|after:start_date',

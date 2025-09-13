@@ -42,6 +42,3 @@ require __DIR__ . '/v1/auth/auth.php';
 // For testing
 
 require __DIR__ . '/v1/testing/data.php';
-
-// reporting
-// require __DIR__ . '/v1/app/reports/organization/organization.php';

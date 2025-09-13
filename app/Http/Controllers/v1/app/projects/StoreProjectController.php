@@ -38,10 +38,11 @@ use App\Repositories\Director\DirectorRepositoryInterface;
 use App\Repositories\PendingTask\PendingTaskRepositoryInterface;
 use App\Repositories\Notification\NotificationRepositoryInterface;
 use App\Repositories\Representative\RepresentativeRepositoryInterface;
+use App\Traits\ChecklistHelperTrait;
 
 class StoreProjectController extends Controller
 {
-    use UtilHelperTrait;
+    use ChecklistHelperTrait, UtilHelperTrait;
     protected $pendingTaskRepository;
     protected $notificationRepository;
     protected $approvalRepository;
@@ -90,9 +91,9 @@ class StoreProjectController extends Controller
                 ->filter()
                 ->values()
                 ->toArray();
-            $checlklistValidat = $this->validateCheckList($task, $exclude, CheckListTypeEnum::project_registeration, $documentCheckListIds);
+            $checlklistValidat = $this->checkListWithExlude($task, $exclude, CheckListTypeEnum::project_registeration, $documentCheckListIds);
         } else {
-            $checlklistValidat = $this->validateCheckList($task, $exclude, CheckListTypeEnum::project_registeration);
+            $checlklistValidat = $this->checkListWithExlude($task, $exclude, CheckListTypeEnum::project_registeration);
         }
         if ($checlklistValidat) {
             return response()->json([
@@ -356,7 +357,7 @@ class StoreProjectController extends Controller
             CheckListEnum::mou_fa->value,
             CheckListEnum::mou_ps->value,
         ];
-        $checlklistValidat = $this->validateCheckListInclude($task, $include, CheckListTypeEnum::project_registeration);
+        $checlklistValidat = $this->checkListWithInclude($task, $include, CheckListTypeEnum::project_registeration);
 
         if ($checlklistValidat) {
             return response()->json([
