@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use App\Models\ProjectStatus;
+use Illuminate\Support\Facades\Log;
+use Mpdf\Mpdf;
 use ZipArchive;
 
 class ProjectPdfController extends Controller
@@ -19,10 +21,12 @@ class ProjectPdfController extends Controller
     use PdfGeneratorTrait, AddressTrait;
 
 
-    public function generateMou(Request $request, $id)
+    public function generateMou(Request $request)
     {
         $languages = ['en', 'fa', 'ps'];
         $pdfFiles = [];
+        $lang = $request->lang;
+        $id = $request->id;
 
         $organizationId = $request->user()->id;
 
@@ -52,6 +56,65 @@ class ProjectPdfController extends Controller
             ], 400);
         }
 
+
+        $mpdf = $this->generatePdf();
+        $this->setWatermark($mpdf);
+
+        $data = $this->loadProjectData($lang, $id);
+
+        // STEP 1: Configure TOC
+
+
+        // STEP 2: First part
+        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouFirstPart", $data);
+
+        // Insert TOC page
+
+        $mpdf->WriteHTML('<tocpagebreak />');
+        $mpdf->WriteHTML('
+            <style>
+                .toc a {
+                    cursor: pointer;
+                    color: blue;
+                    text-decoration: underline;
+                }
+            </style>
+        ');
+        $mpdf->TOC([
+            'toc-preHTML' => '<h1 style="text-align:center;">فهرست عناوین</h1><div class="toc">',
+            'toc-postHTML' => '</div>',
+            'toc-bookmarkText' => 'فهرست عناوین',
+            'paging' => true,
+            'links' => true,
+        ]);
+
+
+        // STEP 3: Content before table
+        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitBeforeTable", $data);
+
+        // STEP 4: Landscape section
+        $mpdf->AddPage('L');
+        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_LandscapeTableOnly", $data);
+        $mpdf->AddPage('P');
+
+        // STEP 5: Content after table
+        $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitAfterTable", $data);
+
+        // Set protection
+        $mpdf->SetProtection(['print']);
+
+        // Store the PDF temporarily
+        $fileName = "{$data['ngo_name']}_mou_{$lang}.pdf";
+        $outputPath = storage_path("app/private/temp/");
+        if (!is_dir($outputPath)) {
+            mkdir($outputPath, 0755, true);
+        }
+        $filePath = $outputPath . $fileName;
+
+        $mpdf->Output($filePath, 'F');
+
+        // Return response for downloading and delete after send
+        return response()->download($filePath)->deleteFileAfterSend(true);
 
 
 
@@ -100,7 +163,12 @@ class ProjectPdfController extends Controller
             $mpdf->SetProtection(['print']);
 
             // Store the PDF temporarily
-            $fileName = "{$data['ngo_name']}_mou_{$lang}.pdf";
+            // Replace spaces with underscores or remove them
+            $fileName = str_replace(' ', '_', "{$data['ngo_name']}_mou_{$lang}.pdf");
+
+            // Ensure the filename is safe
+            $fileName = basename($fileName);
+
             $outputPath = storage_path("app/private/temp/");
             if (!is_dir($outputPath)) {
                 mkdir($outputPath, 0755, true);
@@ -122,32 +190,20 @@ class ProjectPdfController extends Controller
             $zip->close();
         }
 
-
-
-
-        // 
-
         // Cleanup temporary PDFs
         foreach ($pdfFiles as $file) {
             unlink($file);
         }
 
-        return response()->stream(function () use ($zipFile) {
-            readfile($zipFile);        // Send the file content to the browser
-            unlink($zipFile);          // Delete the file after sending
-        }, 200, [
-            'Content-Type' => 'application/zip',
-            'Content-Disposition' => 'inline; filename="' . basename($zipFile) . '"',
-        ]);
         // Download ZIP and delete after sending
-        return response()->file($zipFile);
         return response()->download($zipFile)->deleteFileAfterSend(true);
     }
 
 
     protected function loadProjectData($lang, $id)
     {
-        $locale = App::getLocale(); // e.g., 'en', 'fa', 'ps'
+        $locale = $lang;
+
 
         // 1. Main project info with joined donor/currency
         $project = DB::table('projects as p')
@@ -155,7 +211,13 @@ class ProjectPdfController extends Controller
                 $join->on('prm.project_id', 'p.id')
                     ->where('prm.is_active', true);
             })
-            ->leftJoin('donor_trans as d', 'd.donor_id', '=', 'p.donor_id')
+            ->leftJoin(
+                'donor_trans as d',
+                function ($join) use ($locale) {
+                    $join->on('d.donor_id', '=', 'p.donor_id')
+                        ->where('d.language_name', $locale);
+                }
+            )
             ->leftJoin('currency_trans as c', 'c.id', '=', 'p.currency_id')
             ->leftJoin('organization_trans as nt', function ($join) use ($lang) {
                 $join->on('p.organization_id', 'nt.organization_id')
@@ -163,7 +225,7 @@ class ProjectPdfController extends Controller
             })
             ->leftJoin('project_trans as prot', function ($join) use ($lang) {
                 $join->on('p.organization_id', 'nt.organization_id')
-                    ->where('nt.language_name', $lang);
+                    ->where('prot.language_name', $lang);
             })
             ->where('p.id', $id)
             ->select(
@@ -343,3 +405,71 @@ class ProjectPdfController extends Controller
         return $data;
     }
 }
+
+
+
+
+//    $mpdf = new Mpdf();
+//         $mpdf->autoScriptToLang = true;
+//         $mpdf->autoLangToFont = true;
+
+//         // Watermark
+//         $mpdf->SetWatermarkText('MoPH');
+//         $mpdf->SetWatermarkText('MoPH');
+//         $data = $this->loadProjectData($lang, $id);
+
+//         // STEP 1: Configure TOC
+//         $mpdf->TOC([
+//             'toc-preHTML' => '<h1 style="text-align:center;">فهرست عناوین</h1><div class="toc">',
+//             'toc-postHTML' => '</div>',
+//             'toc-bookmarkText' => 'فهرست عناوین',
+//             'paging' => true,
+//             'links' => true,
+//         ]);
+
+//         // STEP 2: First part
+//         $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouFirstPart", $data);
+
+//         // Insert TOC page
+//         $mpdf->WriteHTML('<tocpagebreak />');
+//         $mpdf->WriteHTML('
+//             <style>
+//                 .toc a {
+//                     cursor: pointer;
+//                     color: blue;
+//                     text-decoration: underline;
+//                 }
+//             </style>
+//         ');
+
+//         // STEP 3: Content before table
+//         $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitBeforeTable", $data);
+
+//         // STEP 4: Landscape section
+//         $mpdf->AddPage('L');
+//         $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_LandscapeTableOnly", $data);
+//         $mpdf->AddPage('P');
+
+//         // STEP 5: Content after table
+//         $this->pdfFilePart($mpdf, "project.mou.pdf.{$lang}.mouSecondPart_PortraitAfterTable", $data);
+
+//         // Set protection
+//         $mpdf->SetProtection(['print']);
+
+//         // Store the PDF temporarily
+//         $fileName = "{$data['ngo_name']}_mou_{$lang}.pdf";
+//         $outputPath = storage_path("app/private/temp/");
+//         if (!is_dir($outputPath)) {
+//             mkdir($outputPath, 0755, true);
+//         }
+//         $filePath = $outputPath . $fileName;
+
+//         $mpdf->Output($filePath, 'F');
+
+//         if (file_exists($filePath)) {
+//             return response()->file($filePath)->deleteFileAfterSend(true);
+//         } else {
+//             Log::error("PDF generation failed for language: {$lang}");
+//             return response()->json(['error' => 'PDF generation failed'], 500);
+//         }
+//         // 

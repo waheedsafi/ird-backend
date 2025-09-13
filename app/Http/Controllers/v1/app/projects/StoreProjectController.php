@@ -344,7 +344,7 @@ class StoreProjectController extends Controller
         $task = $this->pendingTaskRepository->pendingTaskExist(
             $authUser,
             TaskTypeEnum::project_registeration,
-            $organization_id
+            $project_id
         );
         if (!$task) {
             return response()->json([
