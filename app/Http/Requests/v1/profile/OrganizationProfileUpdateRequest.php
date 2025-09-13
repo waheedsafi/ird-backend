@@ -4,6 +4,7 @@ namespace App\Http\Requests\v1\profile;
 
 use App\Models\Organization;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class OrganizationProfileUpdateRequest extends FormRequest
@@ -22,9 +23,8 @@ class OrganizationProfileUpdateRequest extends FormRequest
                 'required',
                 'email:rfc,filter',
                 Rule::unique('emails', 'value')->ignore(
-                    Organization::find($this->id)?->email_id, // the email record id
-                    'id' // primary key in emails table
-                )
+                    Organization::find(Auth::user()->id)?->email_id
+                ),
             ],
         ];
     }
