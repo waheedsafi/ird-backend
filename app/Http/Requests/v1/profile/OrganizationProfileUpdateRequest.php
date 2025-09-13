@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\v1\profile;
 
+use App\Models\Organization;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class OrganizationProfileUpdateRequest extends FormRequest
 {
@@ -16,8 +18,14 @@ class OrganizationProfileUpdateRequest extends FormRequest
         return [
             'username' => ['required', 'string', 'max:45'],
             'contact' => ['required', 'string'],
-            'email' => 'required|email:rfc,filter|unique:emails,value',
-
+            'email' => [
+                'required',
+                'email:rfc,filter',
+                Rule::unique('emails', 'value')->ignore(
+                    Organization::find($this->id)?->email_id, // the email record id
+                    'id' // primary key in emails table
+                )
+            ],
         ];
     }
 }
