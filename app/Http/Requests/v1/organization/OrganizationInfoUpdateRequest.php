@@ -47,7 +47,7 @@ class OrganizationInfoUpdateRequest extends FormRequest
      */
     public function rules()
     {
-        $id = $this->route('id');
+        $id = $this->input('id'); // now merged from JSON
 
         return [
             'id' => 'required',

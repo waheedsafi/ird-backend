@@ -73,6 +73,10 @@ class OrganizationInitStoreRequest extends FormRequest
                     'id' // primary key in emails table
                 )
             ],
+            'moe_registration_no' => [
+                'nullable', // allows it to be null or missing
+                Rule::unique('organizations', 'moe_registration_no')
+            ],
             "country.id" => "required|exists:countries,id",
             "establishment_date" => "required",
             "province.id" => "required|exists:provinces,id",

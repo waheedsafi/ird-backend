@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'app_name' => 'Directorate of International Relations, Coordination, and Aid Management',
+    'app_name' => 'Directorate of International Relations, Coordination and Aid Management',
     'app_desc' => 'IRACD bridges global partners and national priorities to deliver effective, transparent aid coordination. We transform commitments into impactful actions that advance sustainable development and humanitarian goals.',
     'app_quate' => 'Aligning Global Partnerships with National Priorities for Impactful Aid',
     'total' => 'Total',

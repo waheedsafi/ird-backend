@@ -10,6 +10,7 @@ use App\Models\Approval;
 use App\Models\Document;
 use App\Models\Agreement;
 use App\Models\UserStatus;
+use App\Traits\EmailTrait;
 use App\Models\Application;
 use App\Traits\FilterTrait;
 use App\Models\Organization;
@@ -27,6 +28,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Lang;
 use App\Enums\Types\ApprovalTypeEnum;
 use App\Enums\Permissions\PermissionEnum;
+use App\Enums\Types\EmailInfoEnum;
 use App\Enums\Types\PredefinedCommentEnum;
 use App\Repositories\Approval\ApprovalRepositoryInterface;
 use App\Repositories\Notification\NotificationRepositoryInterface;
@@ -34,7 +36,7 @@ use App\Repositories\Notification\NotificationRepositoryInterface;
 class ApprovalController extends Controller
 {
     // use HelperTrait;
-    use FilterTrait, UtilHelperTrait;
+    use FilterTrait, UtilHelperTrait, EmailTrait;
     protected $approvalRepository;
     protected $notificationRepository;
 
@@ -145,8 +147,9 @@ class ApprovalController extends Controller
                     );
                 }
                 // 1. Find organization
-                $organization = Organization::where('id', $approval->requester_id)
-                    ->select('id', 'approved')
+                $organization = Organization::where('organizations.id', $approval->requester_id)
+                    ->join('emails', 'emails.id', '=', 'organizations.email_id')
+                    ->select('organizations.id', 'organizations.approved', 'emails.value as email')
                     ->first();
                 if (!$organization) {
                     return response()->json([
@@ -257,15 +260,29 @@ class ApprovalController extends Controller
                         'ps' => Lang::get('app_translation.org_doc_rejected', [], 'ps'),
                     ];
                 }
+
+                $this->notificationRepository->sendStoreUniqueNotification(
+                    NotifierEnum::confirm_signed_registration_form->value,
+                    $message,
+                    null,
+                    null,
+                    'organizations',
+                    $approval->requester_id
+                );
+                // Sent Emails
+
+                $this->sendEmailToOrganization(
+                    $organization->email,
+                    $approval->approval_type_id == ApprovalTypeEnum::approved->value
+                        ? EmailInfoEnum::ORG_REGISTER_APPROVE_BODY->value
+                        : (
+                            EmailInfoEnum::ORG_REGISTER_REJECTED_BODY->value
+                            . ' ' . $approval->respond_comment
+                            . ' ' . EmailInfoEnum::ORG_REGISTER_REJECTED_fOOTER_BODY->value
+                        ),
+                    EmailInfoEnum::ORG_REGISTER_SUBJECT->value,
+                );
             }
-            $this->notificationRepository->sendStoreUniqueNotification(
-                NotifierEnum::confirm_signed_registration_form->value,
-                $message,
-                null,
-                null,
-                'organizations',
-                $approval->requester_id
-            );
         } else if ($approval->requester_type === Project::class) {
             if ($approval->notifier_type_id == NotifierEnum::confirm_signed_project_form->value) {
                 // 1. Find organization

@@ -44,10 +44,11 @@ use App\Repositories\Notification\NotificationRepositoryInterface;
 use App\Http\Requests\v1\organization\OrganizationInitStoreRequest;
 use App\Http\Requests\v1\organization\StoreSignedRegisterFormRequest;
 use App\Repositories\Representative\RepresentativeRepositoryInterface;
+use App\Traits\ChecklistHelperTrait;
 
 class StoresOrganizationController extends Controller
 {
-    use UtilHelperTrait, UtilHelperTrait;
+    use UtilHelperTrait, ChecklistHelperTrait;
     protected $pendingTaskRepository;
     protected $notificationRepository;
     protected $approvalRepository;
@@ -298,9 +299,9 @@ class StoresOrganizationController extends Controller
                 ->filter()
                 ->values()
                 ->toArray();
-            $checlklistValidat = $this->validateCheckList($task, $exclude, CheckListTypeEnum::organization_registeration, $documentCheckListIds);
+            $checlklistValidat = $this->checkListWithExlude($task, $exclude, CheckListTypeEnum::organization_registeration, $documentCheckListIds);
         } else {
-            $checlklistValidat = $this->validateCheckList($task, $exclude, CheckListTypeEnum::organization_registeration);
+            $checlklistValidat = $this->checkListWithExlude($task, $exclude, CheckListTypeEnum::organization_registeration);
         }
         if ($checlklistValidat) {
             return response()->json([
@@ -532,7 +533,7 @@ class StoresOrganizationController extends Controller
             CheckListEnum::organization_register_form_fa->value,
             CheckListEnum::organization_register_form_ps->value,
         ];
-        $checlklistValidat = $this->validateCheckListInclude($task, $include, CheckListTypeEnum::organization_registeration);
+        $checlklistValidat = $this->checkListWithInclude($task, $include, CheckListTypeEnum::organization_registeration);
 
         if ($checlklistValidat) {
             return response()->json([
