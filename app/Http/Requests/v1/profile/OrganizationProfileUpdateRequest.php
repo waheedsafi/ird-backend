@@ -23,7 +23,7 @@ class OrganizationProfileUpdateRequest extends FormRequest
                 'required',
                 'email:rfc,filter',
                 Rule::unique('emails', 'value')->ignore(
-                    Organization::find(Auth::user()->id)?->email_id
+                    Organization::find($this->user()->id)?->email_id
                 ),
             ],
         ];
