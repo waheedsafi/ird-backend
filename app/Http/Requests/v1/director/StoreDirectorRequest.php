@@ -24,9 +24,9 @@ class StoreDirectorRequest extends FormRequest
     {
         return [
             'id' => 'required',
-            'name_english' => 'required|string|max:128',
-            'name_pashto' => 'required|string|max:128',
-            'name_farsi' => 'required|string|max:128',
+            'name_english' => 'required|string|max:32',
+            'name_pashto' => 'required|string|max:32',
+            'name_farsi' => 'required|string|max:32',
             'gender.id' => 'required|exists:genders,id',
             'email' => 'required|email:rfc,filter|unique:emails,value',
 
@@ -39,9 +39,9 @@ class StoreDirectorRequest extends FormRequest
             'area_english' => 'required|string|max:255',
             'area_pashto' => 'required|string|max:255',
             'area_farsi' => 'required|string|max:255',
-            'surname_english' => 'required|string|max:255',
-            'surname_pashto' => 'required|string|max:255',
-            'surname_farsi' => 'required|string|max:255',
+            'surname_english' => 'required|string|max:32',
+            'surname_pashto' => 'required|string|max:32',
+            'surname_farsi' => 'required|string|max:32',
         ];
     }
 }

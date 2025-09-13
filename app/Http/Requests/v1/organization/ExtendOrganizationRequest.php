@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\v1\organization;
 
+use App\Models\Organization;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ExtendOrganizationRequest extends FormRequest
 {
@@ -60,7 +62,14 @@ class ExtendOrganizationRequest extends FormRequest
                 'unique:organizations,abbr',
             ],
             "contact" => "required",
-            'email' => 'required|email:rfc,filter|unique:emails,value',
+            'email' => [
+                'required',
+                'email:rfc,filter',
+                Rule::unique('emails', 'value')->ignore(
+                    Organization::find($this->organization_id)?->email_id, // the email record id
+                    'id' // primary key in emails table
+                )
+            ],
 
             "moe_registration_no" => "required|unique:organizations,moe_registration_no",
             "province.id" => "required|exists:provinces,id",
