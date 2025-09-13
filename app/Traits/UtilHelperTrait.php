@@ -70,12 +70,13 @@ trait UtilHelperTrait
         // Remove excluded checklist IDs
         $checkListIds = array_intersect($checkListIds, $include);
         // Get checklist IDs from task documents
+
         if ($task) {
             $documentCheckListIds = $this->pendingTaskRepository->pendingTaskDocumentQuery($task->id)
                 ->pluck('check_list_id')
                 ->toArray();
         }
-
+        // Log::info("expecte "$checkListIds);
         // Find missing checklist IDs
         $missingCheckListIds = array_diff($checkListIds, $documentCheckListIds);
 
